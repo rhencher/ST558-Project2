@@ -1,0 +1,64 @@
+---
+title: "Project2"
+author: "Rachel Hencher"
+date: "2022-09-19"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The goal for this project is to create a vignette about contacting an API using functions created to query, parse, and return well-structured data. Then, to use the functions to obtain data from the API and do some exploratory data analysis.  
+
+# Required packages  
+
+`tidyverse`: a collection of R packages that are designed to work together to allow us to read in, transform, and visualize data  
+`httr`: allows us to use the `GET` function to access the API   
+`jsonlite`: allows us to access the `fromJSON` function to convert JSON data to a data frame  
+`ggplot2`: a package in the tidyverse that we will use for creating graphics
+```{r, message=FALSE}
+library(tidyverse)
+library(httr)
+library(jsonlite)
+library(ggplot2)
+```
+
+
+# Functions  
+To contact the chosen API and return well-formatted, parsed data in
+the form of data frames.
+```{r, warning=FALSE}
+data <- GET("https://eonet.gsfc.nasa.gov/api/v3/events?limit=20")
+
+parsed_data <- fromJSON(rawToChar(data$content))
+
+# Create a tibble for the 'events' variable & include the title vector, categories data frame, and geometry data frame
+clean_data1 <- 
+  parsed_data$events %>%
+    as_tibble() %>%
+    select(title, categories, geometry)
+
+# Create a new tibble without nested data frames, select only desired variables, and rename selected variables
+clean_data2 <- 
+  unnest(clean_data1, categories, geometry) %>%
+    select(title, title1, magnitudeValue, magnitudeUnit, date, coordinates) %>%
+    rename("Event Name"=title, "Category"=title1, "Magnitude"=magnitudeValue, "Unit"=magnitudeUnit, "Date"=date, "Location"=coordinates)
+
+clean_data2
+
+# To see what the Location vector looks like
+coord <- 
+  clean_data1$geometry %>%
+  bind_rows() %>%
+  select(coordinates)
+coord
+```
+
+# Exploratory data analysis
+```{r}
+
+```
