@@ -1,0 +1,162 @@
+---
+title: "Project 2"
+author: "Rachel Hencher"
+date: "2022-09-26"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The goal for this project is to create a vignette about contacting an API using functions created to query, parse, and return well-structured data. Then, to use the functions to obtain data from the API and do some exploratory data analysis.  
+
+# Required packages  
+
+`tidyverse`: a collection of R packages that are designed to work together to allow us to read in, transform, and visualize data  
+`httr`: allows us to use the `GET` function to access the API   
+`jsonlite`: allows us to access the `fromJSON` function to convert JSON data to a data frame  
+`ggplot2`: a package in the tidyverse that we will use for creating graphics
+```{r, message=FALSE}
+library(tidyverse)
+library(httr)
+library(jsonlite)
+library(ggplot2)
+```
+
+# Functions  
+Each of the functions below will contact the chosen API and return well-formatted, parsed data in the form of data frames.  
+
+## `general_info`  
+The following function returns general information on either the largest or smallest *n* colleges in a particular state. The user should provide input four arguments:  
+- `key` requests the user's personal key to access the API  
+- `state` requests which state the user would like to retrieve info for using the 2-character abbreviation for the state  
+- `size` requests whether the user would like data on large or small schools by selecting "desc" or "asc" respectively  
+- `n` is the number of records returned (1-100)
+```{r}
+general_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", state="NC", size="desc", n=50)
+{
+  url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&school.state=", state, "&per_page=", n, "&sort=student.size:", size)
+
+  data <- GET(url)
+
+  parsed_data <- fromJSON(rawToChar(data$content))
+
+# Create a tibble with the desired variables
+  school <- parsed_data$results$latest$school %>%
+    select("Name"=name, "Ownership"=ownership)
+
+      school$Ownership <- as.factor(school$Ownership)
+        levels(school$Ownership) <- c("Public", "Private, Nonprofit", "Proprietary")
+
+  student <- parsed_data$results$latest$student %>%
+    select("Size"=size)
+
+  admissions <- parsed_data$results$latest$admissions$admission_rate %>%
+    select("Admissions_Rate"=overall)
+
+  cost <- parsed_data$results$latest$cost$tuition %>%
+    select(ends_with("state"))
+
+  college_data <- 
+    cbind(school, student, admissions, cost) %>%
+    as_tibble() %>%
+    rename("In_State_Tuition"=in_state, "Out_State_Tuition"=out_of_state)
+
+return(college_data)
+}
+
+general_info()
+```
+
+## `cost_info`  
+The following function returns cost info on either the most or least expensive *n* colleges in a particular state by in-state tuition. The user should provide input four arguments:  
+- `key` requests the user's personal key to access the API  
+- `state` requests which state the user would like to retrieve info for using the 2-character abbreviation for the state  
+- `cost` requests whether the user would like data on expensive or more affordable schools by selecting "desc" or "asc" respectively  
+- `n` is the number of records returned (1-100)
+```{r}
+cost_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", state="NC", cost="desc", n=50)
+{
+  url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr&school.state=", state, "&per_page=", n, "&sort=cost.tuition.in_state:", cost)
+
+  data <- GET(url)
+
+  parsed_data <- fromJSON(rawToChar(data$content))
+
+# Create a tibble with the desired variables
+  school <- parsed_data$results$latest$school %>%
+    select("Name"=name, "Ownership"=ownership)
+
+      school$Ownership <- as.factor(school$Ownership)
+        levels(school$Ownership) <- c("Public", "Private, Nonprofit", "Proprietary")
+
+  cost <- parsed_data$results$latest$cost$tuition %>%
+    select(ends_with("state"))
+
+  cost2 <- parsed_data$results$latest$cost %>%
+    select("Books_Supplies"=booksupply)
+
+  cost3 <- parsed_data$results$latest$cost$roomboard %>%
+    select("On_Campus_Room_Board"=oncampus)
+
+  college_data <- 
+    cbind(school, cost, cost2, cost3) %>%
+    as_tibble() %>%
+    mutate(sumrow=in_state+Books_Supplies+On_Campus_Room_Board) %>%
+    rename("In_State_Tuition"=in_state, "Out_State_Tuition"=out_of_state, "Total_In_State_Costs"=sumrow)
+
+return(college_data)
+}
+
+cost_info(c)
+```
+
+## `admissions_info`  
+The following function returns admissions info on *n* colleges under a particular "ownership" category. The user should provide input four arguments:  
+- `key` requests the user's personal key to access the API  
+- `ownership` requests whether the user would like to retrieve admissions info for "1" (public), "2" (private, nonprofit), or "3" (proprietary) colleges  
+- `rate` requests whether the user would like data on less competitive or more selective schools by selecting "desc" or "asc" respectively  
+- `n` is the number of records returned (1-100)
+```{r}
+admissions_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", ownership=1, rate="asc", n=50)
+{
+  url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&per_page=", n, "&school.degrees_awarded.predominant=3&school.ownership=", ownership, "&sort=admissions.admission_rate.overall:", rate)
+
+  data <- GET(url)
+
+  parsed_data <- fromJSON(rawToChar(data$content))
+
+  school <- parsed_data$results$latest$school %>%
+    select("Name"=name, "Ownership"=ownership)
+    
+      school$Ownership <- as.factor(school$Ownership)
+        levels(school$Ownership) <- c("Public", "Private, Nonprofit", "Proprietary")
+
+  admissions <- parsed_data$results$latest$admissions$admission_rate %>%
+    select("Admissions_Rate"=overall)
+  
+  admissions2 <- parsed_data$results$latest$admissions %>%
+    select("Test_Requirements"=test_requirements)
+
+      admissions2$Test_Requirements <- as.factor(admissions2$Test_Requirements)
+        levels(admissions2$Test_Requirements) <- c("Required", "Recommended", "Neither required nor recommended", "Do not know", "Considered but not required")
+  
+  admissions3 <- parsed_data$results$latest$admissions$sat_scores$midpoint %>%
+    select("SAT_Reading"=critical_reading, "SAT_Writing"=writing, "SAT_Math"=math)
+  
+  admissions4 <- parsed_data$results$latest$admissions$act_scores$midpoint %>%
+    select("ACT_English"=english, "ACT_Writing"=writing, "ACT_Math"=math)
+  
+  college_data <- 
+    cbind(school, admissions, admissions2, admissions3, admissions4) %>%
+    as_tibble()
+  
+return(college_data)
+}
+
+admissions_info()
+```
