@@ -36,6 +36,7 @@ The following function returns general information on either the largest or smal
 - `state` requests which state the user would like to retrieve info for using the 2-character abbreviation for the state  
 - `size` requests whether the user would like data on large or small schools by selecting "desc" or "asc" respectively  
 - `n` is the number of records returned (1-100)
+
 ```{r}
 general_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", state="NC", size="desc", n=50)
 {
@@ -160,3 +161,83 @@ return(college_data)
 
 admissions_info()
 ```
+
+## `demographic_info()`  
+The following function returns demographic  information of the school based on the location info on *n* colleges. The user should provide input four arguments:  
+- `key` requests the user's personal key to access the API  
+- `locale` requests the user to mention if they would like to see data on the location of the school.(city/suburb/town/rural)
+- `rate` requests whether the user would like data on the number of students in the school by selecting "desc" or "asc" respectively  
+- `n` is the number of records returned (1-100)
+
+```{r}
+demographic_info <- function(key="k42psBgICW3DEe6eS1gc7AxbTTYtOwOGN9URGVuT", locale="town", n=50, size = "asc")
+{
+  location <- ifelse(locale=="city", "11, 12, 13", 
+                     ifelse(locale=="suburb", "21, 22, 23",
+                            ifelse(locale=="town", "31, 32, 33",
+                                   ifelse(locale=="rural", "41, 42, 43", "ERROR"))))
+  url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&per_page=", n, "&school.locale=", location, "&sort=student.size:", size)
+
+  data <- GET(url)
+
+  parsed_data <- fromJSON(rawToChar(data$content))
+  
+  school <- parsed_data$results$latest$school %>% 
+    select(c("name", "state", "city", "ownership")) 
+  
+  school$ownership <- as.factor(school$ownership)
+        levels(school$ownership) <- c("Public", "Private, Nonprofit", "Proprietary")
+  
+  race_ethnicity <- parsed_data$results$latest$student$demographics$race_ethnicity %>% 
+    select("aian", "nhpi", "asian", "black", "white", "hispanic", "unknown")
+  
+  men <- parsed_data$results$latest$student$demographics$men
+  
+  women <- parsed_data$results$latest$student$demographics$women
+  
+  demographic_data <- 
+    cbind(school, race_ethnicity, men, women) %>%
+    as_tibble()
+  
+return(demographic_data)
+}
+demographic_info()
+```
+
+## `financial_info()`  
+The following function returns income information info on *n* colleges based on the ownership of the college. The user should provide input four arguments:  
+- `key` requests the user's personal key to access the API  
+- `state` requests which state the user would like to retrieve info for using the 2-character abbreviation for the state  
+- `size` requests whether the user would like data on the number of students in the school by selecting "desc" or "asc" respectively  
+- `n` is the number of records returned (1-100)
+
+```{r}
+financial_info <- function(key="k42psBgICW3DEe6eS1gc7AxbTTYtOwOGN9URGVuT", state="NC", n=50, size = "asc")
+{
+                                   
+  url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&per_page=", n, "school.state=", state, "&sort=student.size:", size)
+
+  data <- GET(url)
+
+  parsed_data <- fromJSON(rawToChar(data$content))
+  
+  school <- parsed_data$results$latest$school %>% 
+    select(c("ownership", "city", "name")) 
+  
+  school$ownership <- as.factor(school$ownership)
+        levels(school$ownership) <- c("Public", "Private, Nonprofit", "Proprietary")
+  
+  size <- parsed_data$results$latest$student$size
+  
+  poverty_rate <- parsed_data$results$latest$student$demographics$poverty_rate
+  
+  financial_bg_data <- 
+    cbind(school, size, poverty_rate) %>%
+    as_tibble() 
+
+return(financial_bg_data)
+}
+financial_info()
+```
+
+
