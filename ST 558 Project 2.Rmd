@@ -69,7 +69,7 @@ general_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", state="
     as_tibble() %>%
     rename("In_State_Tuition"=in_state, "Out_State_Tuition"=out_of_state)
 
-return(datatable(college_data))
+return(college_data)
 }
 
 general_info()
@@ -112,7 +112,7 @@ cost_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", state="NC"
     mutate(sumrow=in_state+Books_Supplies+On_Campus_Room_Board) %>%
     rename("In_State_Tuition"=in_state, "Out_State_Tuition"=out_of_state, "Total_In_State_Costs"=sumrow)
 
-return(datatable(college_data))
+return(college_data)
 }
 
 cost_info(c)
@@ -158,7 +158,7 @@ admissions_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", owne
     cbind(school, admissions, admissions2, admissions3, admissions4) %>%
     as_tibble()
   
-return(datatable(college_data))
+return(college_data)
 }
 
 admissions_info()
@@ -201,7 +201,7 @@ demographic_info <- function(key="k42psBgICW3DEe6eS1gc7AxbTTYtOwOGN9URGVuT", loc
     cbind(school, race_ethnicity, men, women) %>%
     as_tibble()
   
-return(datatable(demographic_data))
+return(demographic_data)
 }
 demographic_info()
 ```
@@ -237,7 +237,7 @@ financial_info <- function(key="k42psBgICW3DEe6eS1gc7AxbTTYtOwOGN9URGVuT", state
     cbind(school, size, poverty_rate) %>%
     as_tibble() 
 
-return(datatable(financial_bg_data))
+return(financial_bg_data)
 }
 financial_info()
 ```
@@ -275,8 +275,32 @@ earnings_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", earnin
     mutate("Earnings_To_Cost_Ratio"=round(Median_Earnings/in_state,2)) %>%
     rename("In_State_Tuition"=in_state, "Out_State_Tuition"=out_of_state)
 
-return(datatable(college_data))
+return(college_data)
 }
 
 earnings_info()
+```
+
+# Data Exploration
+```{r, warning=FALSE}
+tuition_data <- general_info(n=100)
+plot1 <- ggplot(tuition_data, aes(x=Ownership, y=Out_State_Tuition)) + geom_boxplot() + labs(y ="Out-of-State Tuition",
+ title="Out-of-State Tuition by Ownership Type for 100 Largest NC Colleges")
+plot1
+```
+
+```{r, warning=FALSE}
+admissions_data <- general_info(n=100)
+plot2 <- ggplot(tuition_data, aes(x=Admissions_Rate, y=In_State_Tuition)) + geom_point(aes(color=Ownership)) + labs(x="Admissions Rate", y="In-State Tuition",
+ title="In-State Tuition vs Admissions Rate for 100 Largest NC Colleges")
+plot2
+```
+
+```{r, warning=FALSE, message=FALSE}
+testing_data <- admissions_info()
+testing_data2 <- testing_data %>%
+  mutate("Total_SAT"=(sumrow=SAT_Reading+SAT_Math))
+
+plot3 <- ggplot(testing_data2, aes(x=Admissions_Rate, y=Total_SAT)) + geom_point(aes(shape=Test_Requirements, color=Test_Requirements)) + geom_smooth(method=lm) + labs(x="Admissions Rate", y="Total SAT for Reading/Math", title="Total SAT Score vs Admissions Rate for the 50 Most Selective US Colleges")
+plot3
 ```
