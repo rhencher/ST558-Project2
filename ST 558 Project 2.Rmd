@@ -6,6 +6,8 @@ output:
   html_document:
     toc: true
     toc_float: true
+    theme: cerulean
+    highlight: pygments
 ---
 
 ```{r setup, include=FALSE}
@@ -67,7 +69,7 @@ general_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", state="
     as_tibble() %>%
     rename("In_State_Tuition"=in_state, "Out_State_Tuition"=out_of_state)
 
-return(college_data)
+return(datatable(college_data))
 }
 
 general_info()
@@ -110,7 +112,7 @@ cost_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", state="NC"
     mutate(sumrow=in_state+Books_Supplies+On_Campus_Room_Board) %>%
     rename("In_State_Tuition"=in_state, "Out_State_Tuition"=out_of_state, "Total_In_State_Costs"=sumrow)
 
-return(college_data)
+return(datatable(college_data))
 }
 
 cost_info(c)
@@ -156,7 +158,7 @@ admissions_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", owne
     cbind(school, admissions, admissions2, admissions3, admissions4) %>%
     as_tibble()
   
-return(college_data)
+return(datatable(college_data))
 }
 
 admissions_info()
@@ -199,7 +201,7 @@ demographic_info <- function(key="k42psBgICW3DEe6eS1gc7AxbTTYtOwOGN9URGVuT", loc
     cbind(school, race_ethnicity, men, women) %>%
     as_tibble()
   
-return(demographic_data)
+return(datatable(demographic_data))
 }
 demographic_info()
 ```
@@ -235,9 +237,46 @@ financial_info <- function(key="k42psBgICW3DEe6eS1gc7AxbTTYtOwOGN9URGVuT", state
     cbind(school, size, poverty_rate) %>%
     as_tibble() 
 
-return(financial_bg_data)
+return(datatable(financial_bg_data))
 }
 financial_info()
 ```
 
+## `earnings_info()`  
+The following function returns earnings information on *n* colleges with either the highest or lowest median student earnings 10 years after entry. The user should provide input for three arguments:  
+- `key` requests the user's personal key to access the API  
+- `earnings` requests whether the user would like data on schools whose students are the highest earners or lowest earners by selecting "desc" or "asc" respectively  
+- `n` is the number of records returned (1-100)
+```{r}
+earnings_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", earnings="desc", n=50)
+{
+  url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr&per_page=", n, "&sort=earnings.10_yrs_after_entry.median:", earnings)
 
+  data <- GET(url)
+
+  parsed_data <- fromJSON(rawToChar(data$content))
+
+# Create a tibble with the desired variables
+  school <- parsed_data$results$latest$school %>%
+    select("Name"=name)
+
+  cost <- parsed_data$results$latest$cost$tuition %>%
+    select(ends_with("state"))
+  
+  earnings1 <- parsed_data$results$latest$earnings$`10_yrs_after_entry` %>%
+    select("Median_Earnings"=median)
+  
+  earnings2 <- parsed_data$results$latest$earnings$`10_yrs_after_entry`$mean_earnings %>%
+    select("Mean_For_Females"=female_students, "Mean_For_Males"=male_students)
+
+  college_data <- 
+    cbind(school, cost, earnings1, earnings2) %>%
+    as_tibble() %>%
+    mutate("Earnings_To_Cost_Ratio"=round(Median_Earnings/in_state,2)) %>%
+    rename("In_State_Tuition"=in_state, "Out_State_Tuition"=out_of_state)
+
+return(datatable(college_data))
+}
+
+earnings_info()
+```
