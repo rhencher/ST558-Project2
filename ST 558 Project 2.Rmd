@@ -304,3 +304,53 @@ testing_data2 <- testing_data %>%
 plot3 <- ggplot(testing_data2, aes(x=Admissions_Rate, y=Total_SAT)) + geom_point(aes(shape=Test_Requirements, color=Test_Requirements)) + geom_smooth(method=lm) + labs(x="Admissions Rate", y="Total SAT for Reading/Math", title="Total SAT Score vs Admissions Rate for the 50 Most Selective US Colleges")
 plot3
 ```
+
+```{r, warning=FALSE, message=FALSE}
+costs_data <- cost_info(n=100)
+
+plot4 <- ggplot(costs_data, aes(x=Ownership, y=Total_In_State)) + geom_boxplot() + labs(y ="In-State Tuition",
+ title="In-State Tuition by Ownership Type for 100 Most Expensive NC Colleges")
+plot4
+```
+
+
+```{r, eval=FALSE}
+admissions_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", ownership=1, rate="asc", n=50)
+{
+  ownership <- ifelse(ownership=="Public", "1", 
+                     ifelse(ownership=="Private, Nonprofit", "2",
+                            ifelse(ownership=="Proprietary", "3", "ERROR")))
+  
+  url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", "&per_page=", n, "&school.degrees_awarded.predominant=3&school.ownership=", ownership, "&sort=admissions.admission_rate.overall:", rate)
+
+  data <- GET(url)
+
+  parsed_data <- fromJSON(rawToChar(data$content))
+
+  school <- parsed_data$results$latest$school %>%
+    select("Name"=name, "Ownership"=ownership)
+
+  admissions <- parsed_data$results$latest$admissions$admission_rate %>%
+    select("Admissions_Rate"=overall)
+  
+  admissions2 <- parsed_data$results$latest$admissions %>%
+    select("Test_Requirements"=test_requirements)
+
+      admissions2$Test_Requirements <- as.factor(admissions2$Test_Requirements)
+        levels(admissions2$Test_Requirements) <- c("Required", "Recommended", "Neither required nor recommended", "Do not know", "Considered but not required")
+  
+  admissions3 <- parsed_data$results$latest$admissions$sat_scores$midpoint %>%
+    select("SAT_Reading"=critical_reading, "SAT_Writing"=writing, "SAT_Math"=math)
+  
+  admissions4 <- parsed_data$results$latest$admissions$act_scores$midpoint %>%
+    select("ACT_English"=english, "ACT_Writing"=writing, "ACT_Math"=math)
+  
+  college_data <- 
+    cbind(school, admissions, admissions2, admissions3, admissions4) %>%
+    as_tibble()
+  
+return(college_data)
+}
+
+admissions_info()
+```
