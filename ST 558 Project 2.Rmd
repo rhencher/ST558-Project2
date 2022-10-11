@@ -104,14 +104,18 @@ The following function returns admissions info on *n* colleges under a particula
 - `n` is the number of records returned (1-100)  
 - `year` requests data from a particular year if the user desires data other than the latest available
 ```{r}
-admissions_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", ownership=1, rate="asc", n=50, year="latest")
+admissions_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", ownership="private", rate="desc", n=50, year="latest")
 {
+  ownership <- ifelse(tolower(ownership)=="public", "1", 
+                      ifelse(tolower(ownership)=="private", "2", 
+                             ifelse(tolower(ownership)=="proprietary", "3", "ERROR"))) 
+        
   url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&school.ownership=", ownership, "&per_page=", n, "&sort=admissions.admission_rate.overall:", rate, "&school.degrees_awarded.predominant=3&_fields=school.name,school.ownership,", year, ".admissions.admission_rate.overall,", year, ".admissions.test_requirements,", year, ".admissions.sat_scores.midpoint.critical_reading,", year, ".admissions.sat_scores.midpoint.writing,", year, ".admissions.sat_scores.midpoint.math,", year, ".admissions.act_scores.midpoint.english,", year, ".admissions.act_scores.midpoint.writing,", year, ".admissions.act_scores.midpoint.math")
 
   data <- GET(url)
 
   parsed_data <- fromJSON(rawToChar(data$content))
-
+  
   admissions_data <-
     parsed_data$results %>%
     as_tibble() %>%
@@ -137,36 +141,42 @@ The following function returns demographic  information of the school based on t
 - `n` is the number of records returned (1-100)
 
 ```{r}
-demographic_info <- function(key="k42psBgICW3DEe6eS1gc7AxbTTYtOwOGN9URGVuT", state = "NC", locale="town", n=50, size = "asc")
+demographic_info <- function(key="k42psBgICW3DEe6eS1gc7AxbTTYtOwOGN9URGVuT", state = "NC", size = "asc", locale="town", n=50, year= "latest")
 {
-  location <- ifelse(locale=="city", "11, 12, 13", 
-                     ifelse(locale=="suburb", "21, 22, 23",
-                            ifelse(locale=="town", "31, 32, 33",
-                                   ifelse(locale=="rural", "41, 42, 43", "ERROR"))))
-  url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&per_page=", n, "&school.state=", state, "&school.locale=", location, "&sort=student.size:", size)
+  location <- ifelse(locale=="city", "11,12,13", 
+                     ifelse(locale=="suburb", "21,22,23",
+                            ifelse(locale=="town", "31,32,33",
+                                   ifelse(locale=="rural", "41,42,43", "ERROR"))))
+  
+    url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&school.state=", state, "&school.locale=", location, "&per_page=", n, "&sort=student.size:", size, "&_fields=school.name,school.ownership,school.city,", year, ".student.size,", year, ".student.demographics.race_ethnicity.aian,", year, ".student.demographics.race_ethnicity.nhpi,", year, ".student.demographics.race_ethnicity.asian,", year, ".student.demographics.race_ethnicity.black,", year, ".student.demographics.race_ethnicity.white,", year, ".student.demographics.race_ethnicity.hispanic,", year, ".student.demographics.race_ethnicity.unknown,", year, ".student.demographics.men,", year, ".student.demographics.women")
+
+  
+  # url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&per_page=", n, "&school.state=", state, "&school.locale=", location, "&sort=student.size:", size)
 
   data <- GET(url)
 
   parsed_data <- fromJSON(rawToChar(data$content))
   
-  school <- parsed_data$results$latest$school %>% 
-    select(c("name", "state", "city", "ownership")) 
+  demographic_data <-
+    parsed_data$results %>%
+    as_tibble() %>%
+    select("name" = ends_with("name"),
+           "city" = ends_with("city"),
+           "ownership" = ends_with("ownership"),
+           "total_enrollment" = ends_with("size"),
+           "aian" = ends_with("aian"),
+           "nhpi" = ends_with("nhpi"),
+           "asian" = ends_with("asian"),
+           "black" = ends_with("black"),
+           "white" = ends_with("white"),
+           "hispanic" = ends_with("hispanic"),
+           "unknown" = ends_with("unknown"),
+           "men" = ends_with("men"),
+           "women" = ends_with("women")
+           )
   
-  total_enrollment <- parsed_data$results$latest$student$size
-  
-  school$ownership <- as.factor(school$ownership)
-        levels(school$ownership) <- c("Public", "Private, Nonprofit", "Proprietary")
-  
-  race_ethnicity <- parsed_data$results$latest$student$demographics$race_ethnicity %>% 
-    select("aian", "nhpi", "asian", "black", "white", "hispanic", "unknown")
-  
-  men <- parsed_data$results$latest$student$demographics$men
-  
-  women <- parsed_data$results$latest$student$demographics$women
-  
-  demographic_data <- 
-    cbind(school, total_enrollment, race_ethnicity, men, women) %>%
-    as_tibble()
+  demographic_data$ownership <- as.factor(demographic_data$ownership)
+        levels(demographic_data$ownership) <- c("Public", "Private, Nonprofit", "Proprietary")
   
   demographic_data <- demographic_data %>% 
     mutate(total_aian = round(total_enrollment*aian), 
@@ -176,7 +186,7 @@ demographic_info <- function(key="k42psBgICW3DEe6eS1gc7AxbTTYtOwOGN9URGVuT", sta
            total_white = round(total_enrollment*white), 
            total_hispanic = round(total_enrollment*hispanic),
            total_unknown = round(total_enrollment*unknown),
-           total_men = round(total_enrollment*men),
+           total_men = round(total_enrollment*men1),
            total_women = round(total_enrollment*women)) %>% 
     select(name, city, ownership, starts_with("total_")) %>% 
     pivot_longer(cols = !c(name, city, ownership), names_to = "ethnicity_gender", values_to = "count") 
@@ -193,7 +203,8 @@ The following function returns student financial information on either the large
 - `size` requests whether the user would like data on large or small schools by selecting "desc" or "asc" respectively  
 - `n` is the number of records returned (1-100)  
 - `year` requests data from a particular year if the user desires data other than the latest available
-```{r, eval=FALSE}
+
+```{r}
 financial_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", state="NC", size="desc", n=50, year="latest")
 {
   url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&school.state=", state, "&per_page=", n, "&sort=student.size:", size, "&_fields=school.name,school.ownership,school.city,", year, ".student.size,", year, ".student.demographics.poverty_rate,", year, ".student.demographics.median_family_income,", year, ".aid.median_debt.female_students,", year, ".aid.median_debt.male_students")
@@ -205,10 +216,10 @@ financial_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", state
   financial_data <- 
     parsed_data$results %>%
     as_tibble() %>%
-    select("Name"=ends_with("name"), "Ownership"=ends_with("ownership"), "City"=ends_with("city"), "Size"=ends_with("size"), "Poverty_rate"=ends_with("poverty_rate"), "Median_Family_Income"=ends_with("income"), "Female_Median_Debt"=ends_with("female_students"), "Male_Median_Debt"=ends_with("debt.male_students"))
+    select("name"=ends_with("name"), "ownership"=ends_with("ownership"), "city"=ends_with("city"), "size"=ends_with("size"), "poverty_rate"=ends_with("poverty_rate"), "median_family_income"=ends_with("income"), "female_fedian_febt"=ends_with("female_students"), "male_median_debt"=ends_with("debt.male_students"))
   
-    financial_data$Ownership <- as.factor(financial_data$Ownership)
-      levels(financial_data$Ownership) <- c("Public", "Private, Nonprofit", "Proprietary")
+    financial_data$ownership <- as.factor(financial_data$ownership)
+      levels(financial_data$ownership) <- c("Public", "Private, Nonprofit", "Proprietary")
 
 return(financial_data)
 }
@@ -222,6 +233,7 @@ The following function returns earnings information on *n* colleges with either 
 - `earnings` requests whether the user would like data on schools whose students are the highest earners or lowest earners by selecting "desc" or "asc" respectively  
 - `n` is the number of records returned (1-100)  
 - `year` requests data from a particular year if the user desires data other than the latest available
+
 ```{r}
 earnings_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", earnings="desc", n=50, year="latest")
 {
@@ -245,8 +257,11 @@ earnings_info()
 # Data Exploration
 ```{r, warning=FALSE}
 general_data <- general_info(n=100)
+
+summary(general_data)
+
 plot1 <- ggplot(general_data, aes(x=Ownership, y=Size)) + 
-  geom_boxplot() + 
+  geom_boxplot(fill = "#112446") + 
   labs(title="Size by Ownership Type for State Colleges") + 
   theme_minimal()
 plot1
@@ -257,7 +272,7 @@ plot2 <- ggplot(general_data, aes(x=Admissions_Rate, y=In_State_Tuition)) +
   theme_minimal()
 plot2
 
-plot3 <- ggplot(general_data, aes(x=Admissions_Rate, y=Out_State_Tuition)) + 
+plot3 <- ggplot(general_data, aes(x=Admissions_Rate, y=Out_of_State_Tuition)) + 
   geom_point(aes(color=Ownership)) + 
   labs(x="Admissions Rate", y="Out-of-State Tuition", title="Out-of-State Tuition vs Admissions Rate for State Colleges") + 
   theme_minimal()
@@ -265,7 +280,7 @@ plot3
 ```
 
 ```{r, warning=FALSE, message=FALSE}
-admissions_data <- admissions_info()
+admissions_data <- admissions_info(n=100, )
 admissions_data2 <- admissions_data %>%
   mutate("Total_SAT"=(sumrow=SAT_Reading+SAT_Math), "Total_ACT"=(sumrow=ACT_English+ACT_Math))
 
@@ -288,21 +303,24 @@ plot6 <- ggplot(admissions_data2, aes(x=Total_SAT, y=Total_ACT)) +
   labs(x="Total SAT for Reading/Math", y="Total ACT for English/Math", title="Total ACT Score vs Total SAT Score for US Colleges") + 
   theme_minimal()
 plot6
+
+table(admissions_data$Ownership, admissions_data$Test_Requirements)
 ```
+
 
 ```{r, warning=FALSE, message=FALSE}
 costs_data <- cost_info(n=100)
 
 plot7 <- ggplot(costs_data, aes(x=Ownership, y=In_State_Tuition)) + 
-  geom_boxplot() + 
+  geom_boxplot(fill = "#112446") + 
   scale_y_continuous(trans="log10") + 
   geom_jitter() +
   labs(y ="In-State Tuition", title="In-State Tuition by Ownership Type for State Colleges") + 
   theme_minimal()
 plot7
 
-plot8 <- ggplot(costs_data, aes(x=Ownership, y=Out_State_Tuition)) + 
-  geom_boxplot() + 
+plot8 <- ggplot(costs_data, aes(x=Ownership, y=Out_of_State_Tuition)) + 
+  geom_boxplot(fill = "#112446") + 
   scale_y_continuous(trans="log10") + 
   geom_jitter() +
   labs(y ="Out-of-State Tuition", title="Out-of-State Tuition by Ownership Type for State Colleges") + 
@@ -310,10 +328,10 @@ plot8 <- ggplot(costs_data, aes(x=Ownership, y=Out_State_Tuition)) +
 plot8
 ```
 
+
 ```{r, warning=FALSE}
 demographic_data <- demographic_info()
-ggplot(demographic_data) +
-  aes(x = ownership, y = count) +
+ggplot(demographic_data, aes(ownership, count)) +
   geom_col(fill = "#112446") +
   labs(
     x = "Ownership ",
@@ -327,17 +345,22 @@ ggplot(demographic_data) +
 ```
 
 ```{r, warning=FALSE}
+
 demographic_data_ownership <- demographic_data %>% 
-  filter(!(ethnicity_gender %in% c("total_men", "total_women"))) %>% 
+  filter(!(ethnicity_gender %in% c("total_men", "total_women")), !(ownership %in% "Proprietary")) %>% 
   group_by(ownership, ethnicity_gender) %>% 
-  summarise(total_count = sum(count))
+  summarise(total_count = sum(count)) %>% 
+  arrange(total_count, .by_group = TRUE)
+
+demographic_data_ownership$ethnicity_gender < factor(demographic_data_ownership$ethnicity_gender, levels=demographic_data_ownership[order(demographic_data_ownership$ethnicity_gender), "total_count"])
+
 demographic_data_ownership
 
 demographic_data_ownership %>% 
- filter(!(ethnicity_gender %in% "total_enrollment")) %>%
- ggplot() +
-  aes(x = ownership, y = total_count, fill = ethnicity_gender) +
-  geom_col(position = "dodge") +
+  filter(!(ethnicity_gender %in% "total_enrollment")) %>%
+  arrange(ethnicity_gender) %>% 
+  ggplot(aes(x=ownership, y = total_count, fill = ethnicity_gender)) +
+  geom_bar(position=position_dodge2(reverse = TRUE), stat='identity') +
   scale_fill_hue(direction = 1) +
   labs(
     x = "Ownership",
@@ -353,74 +376,62 @@ demographic_data_ownership %>%
 ```{r, warning=FALSE}
 demographic_data_gender <- demographic_data %>% 
   filter(ethnicity_gender %in% c("total_men", "total_women")) %>% 
-  pivot_wider(names_from = ethnicity_gender, values_from = count)
-
-men_plot <- ggplot(demographic_data_gender) +
-  aes(x = ownership, y = total_men) +
-  geom_boxplot(fill = "#112446") +
-  geom_jitter() +
+  ggplot(aes(x=ownership, y=count, fill=ethnicity_gender)) +
+  geom_boxplot() +
   scale_y_continuous(trans="log10") +
   labs(
-    x = "Total Men",
-    y = "Ownership",
-    title = "Men Students for each Ownership",
+    x = "Ownership",
+    y = "Count",
+    title = "Count of Students for each Ownership by Gender",
     subtitle = paste("State :", state, "; Locale :", locale)
-  ) +
-  coord_flip() +
+  ) + 
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5),
         plot.subtitle = element_text(hjust = 0.5)) 
+demographic_data_gender  
 
-women_plot <- ggplot(demographic_data_gender) +
-  aes(x = ownership, y = total_women) +
-  geom_boxplot(fill = "#112446") +
-  geom_jitter() +
-  scale_y_continuous(trans="log10") +
-  labs(
-    x = "Total Women",
-    y = "Ownership",
-    title = "Women Students for each Ownership",
-    subtitle = paste("State :", state, "; Locale :", locale)
-  ) +
-  coord_flip() +
-  theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5),
-        plot.subtitle = element_text(hjust = 0.5)) 
-
-grid.arrange(men_plot, women_plot, ncol=2)
 ```
 
-```{r, warning=FALSE}
-financial_data <- financial_info() %>% 
-  group_by(ownership, city) %>% 
-  summarise(median_poverty_rate = median(poverty_rate))
-financial_data
 
-financial_data %>%
- filter(!is.na(median_poverty_rate)) %>%
- ggplot() +
+```{r, warning=FALSE}
+financial_data <- financial_info() 
+
+financial_data_pr <- financial_data %>% 
+  group_by(ownership, city) %>% 
+  summarise(median_poverty_rate = median(poverty_rate, na.rm = TRUE))
+
+financial_data_pr
+
+financial_data_pr %>%
+  filter(!is.na(median_poverty_rate)) %>%
+  ggplot() +
   aes(x = median_poverty_rate, y= ..density..) +
   geom_histogram(bins = 14L, fill = "#112446") +
   geom_density(color = "red", 
-                 size = 2) +
+               size = 2) +
   labs(
     x = "Poverty Rate",
     title = "Poverty Rate Distribution by State"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) 
 
-poverty_ownership <- financial_info() %>% 
+poverty_ownership <- financial_data %>% 
   group_by(ownership) %>% 
-  summarise(median_pr = mean(poverty_rate))
+  summarise(mean_pr = mean(poverty_rate, na.rm=TRUE)) %>% 
+  filter(!(ownership %in% "Proprietary"))
 
 ggplot(poverty_ownership) +
-  aes(x = ownership, y = median_pr) +
+  aes(x = ownership, y = mean_pr) +
   geom_col(fill = "#112446") +
   labs(
     x = "Poverty Rate",
     title = "Poverty Rate by Ownership for Each State"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) 
 ```
 
 ```{r, warning=FALSE}
@@ -429,58 +440,18 @@ instate_earning <- ggplot(earnings_data) +
   aes(x = In_State_Tuition, y = Median_Earnings) +
   geom_point(shape = "circle", size = 2, colour = "#112446") +
   geom_smooth(span = 0.75) +
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) 
 
 outstate_earning <-  ggplot(earnings_data) +
-  aes(x = Out_State_Tuition, y = Median_Earnings) +
+  aes(x = Out_of_State_Tuition, y = Median_Earnings) +
   geom_point(shape = "circle", size = 2, colour = "#112446") +
   geom_smooth(span = 0.75) +
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) 
 
 grid.arrange(instate_earning, outstate_earning, ncol=2)
 ```
 
-
-<!-- ```{r, eval=FALSE} -->
-<!-- admissions_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", ownership="public", rate="asc", n=50) -->
-<!-- { -->
-<!--   ownership <- ifelse(tolower(ownership)=="public", "1", -->
-<!--                      ifelse(tolower(ownership)=="private", "2", -->
-<!--                             ifelse(tolower(ownership)=="proprietary", "3", "ERROR"))) -->
-
-<!--   url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", "&per_page=", n, "&school.degrees_awarded.predominant=3&school.ownership=", ownership, "&sort=admissions.admission_rate.overall:", rate) -->
-
-<!--   data <- GET(url) -->
-
-<!--   parsed_data <- fromJSON(rawToChar(data$content)) -->
-
-<!--   school <- parsed_data$results$latest$school %>% -->
-<!--      select(c("name", "state", "city", "ownership")) -->
-
-<!--   school$ownership <- as.factor(school$ownership) -->
-<!--         levels(school$ownership) <- c("Public", "Private, Nonprofit", "Proprietary") -->
-
-<!--   admissions <- parsed_data$results$latest$admissions$admission_rate %>% -->
-<!--     select("Admissions_Rate"=overall) -->
-
-<!--   admissions2 <- parsed_data$results$latest$admissions %>% -->
-<!--     select("Test_Requirements"=test_requirements) -->
-
-<!--       admissions2$Test_Requirements <- as.factor(admissions2$Test_Requirements) -->
-<!--         levels(admissions2$Test_Requirements) <- c("Required", "Recommended", "Neither required nor recommended", "Do not know", "Considered but not required") -->
-
-<!--   admissions3 <- parsed_data$results$latest$admissions$sat_scores$midpoint %>% -->
-<!--     select("SAT_Reading"=critical_reading, "SAT_Writing"=writing, "SAT_Math"=math) -->
-
-<!--   admissions4 <- parsed_data$results$latest$admissions$act_scores$midpoint %>% -->
-<!--     select("ACT_English"=english, "ACT_Writing"=writing, "ACT_Math"=math) -->
-
-<!--   college_data <- -->
-<!--     cbind(school, admissions, admissions2, admissions3, admissions4) %>% -->
-<!--     as_tibble() -->
-
-<!-- return(college_data) -->
-<!-- } -->
-
-<!-- admissions_info() -->
-```
