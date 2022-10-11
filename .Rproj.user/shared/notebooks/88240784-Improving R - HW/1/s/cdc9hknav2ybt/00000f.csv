@@ -1,0 +1,5 @@
+"0","H0_test <- function(t_statistics, n, direction){"
+"0","  decision <- ifelse(direction == ""two-sided"", abs(t_statistics) > qt(0.975, df = n-1),"
+"0","                     ifelse(direction == ""left"", t_statistics < qt(0.05, df = n-1), "
+"0","                            ifelse(direction == ""right"", t_statistics > qt(0.95, df = n-1), FALSE)))"
+"0","}"
