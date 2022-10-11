@@ -112,7 +112,7 @@ The following function returns admissions info on *n* colleges under a particula
 ```{r}
 admissions_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", ownership="private", rate="desc", n=50, year="latest")
 {
-  ownership <- ifelse(tolower(ownership)=="public", "1", 
+  ownership <- ifelse(tolower(ownership)=="public", 1, 
                       ifelse(tolower(ownership)=="private", "2", 
                              ifelse(tolower(ownership)=="proprietary", "3", "ERROR"))) 
         
@@ -263,7 +263,7 @@ earnings_info()
 # Data Exploration
 ```{r, warning=FALSE, include=TRUE, echo=TRUE}
 
-exploration <- function(general_data, cost_data, admissions_data, demographic_data, financial_data, earnings_data) {
+exploration <- function(general_data, cost_data, admissions_data, demographic_data, financial_data, earnings_data, state, locale) {
 
 summary(general_data)
   
@@ -468,7 +468,7 @@ main <- function() {
   demographic_data <- demographic_info(key, state, size, locale, n, year)
   financial_data <- financial_info(key, state, size, year)
   earnings_data <- earnings_info(key, earnings = size, n, year)
-  exploration(general_data, cost_data, admissions_data, demographic_data, financial_data, earnings_data)
+  exploration(general_data, cost_data, admissions_data, demographic_data, financial_data, earnings_data, state, locale)
 }
 ```
 
