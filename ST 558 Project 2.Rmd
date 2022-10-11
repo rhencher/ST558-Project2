@@ -8,6 +8,14 @@ output:
     toc_float: true
     theme: cerulean
     highlight: pygments
+params:
+  key: "D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr"
+  state: "NC"
+  ordering: "desc"
+  rows: 100
+  year: "latest"
+  ownership: "private"
+  locale: "town"
 ---
 
 ```{r setup, include=FALSE}
@@ -29,8 +37,6 @@ library(jsonlite)
 library(ggplot2)
 library(gridExtra)
 library(forcats)
-state = "NC"
-locale = "town"
 ```
 
 # Functions  
@@ -255,11 +261,12 @@ earnings_info()
 ```
 
 # Data Exploration
-```{r, warning=FALSE}
-general_data <- general_info(n=100)
+```{r, warning=FALSE, include=TRUE, echo=TRUE}
+
+exploration <- function(general_data, cost_data, admissions_data, demographic_data, financial_data, earnings_data) {
 
 summary(general_data)
-
+  
 plot1 <- ggplot(general_data, aes(x=Ownership, y=Size)) + 
   geom_boxplot(fill = "#112446") + 
   labs(title="Size by Ownership Type for State Colleges") + 
@@ -277,10 +284,7 @@ plot3 <- ggplot(general_data, aes(x=Admissions_Rate, y=Out_of_State_Tuition)) +
   labs(x="Admissions Rate", y="Out-of-State Tuition", title="Out-of-State Tuition vs Admissions Rate for State Colleges") + 
   theme_minimal()
 plot3
-```
 
-```{r, warning=FALSE, message=FALSE}
-admissions_data <- admissions_info(n=100, )
 admissions_data2 <- admissions_data %>%
   mutate("Total_SAT"=(sumrow=SAT_Reading+SAT_Math), "Total_ACT"=(sumrow=ACT_English+ACT_Math))
 
@@ -305,11 +309,7 @@ plot6 <- ggplot(admissions_data2, aes(x=Total_SAT, y=Total_ACT)) +
 plot6
 
 table(admissions_data$Ownership, admissions_data$Test_Requirements)
-```
 
-
-```{r, warning=FALSE, message=FALSE}
-costs_data <- cost_info(n=100)
 
 plot7 <- ggplot(costs_data, aes(x=Ownership, y=In_State_Tuition)) + 
   geom_boxplot(fill = "#112446") + 
@@ -326,12 +326,8 @@ plot8 <- ggplot(costs_data, aes(x=Ownership, y=Out_of_State_Tuition)) +
   labs(y ="Out-of-State Tuition", title="Out-of-State Tuition by Ownership Type for State Colleges") + 
   theme_minimal()
 plot8
-```
 
-
-```{r, warning=FALSE}
-demographic_data <- demographic_info()
-ggplot(demographic_data, aes(ownership, count)) +
+demo <- ggplot(demographic_data, aes(ownership, count)) +
   geom_col(fill = "#112446") +
   labs(
     x = "Ownership ",
@@ -342,9 +338,7 @@ ggplot(demographic_data, aes(ownership, count)) +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5),
         plot.subtitle = element_text(hjust = 0.5)) 
-```
 
-```{r, warning=FALSE}
 
 demographic_data_ownership <- demographic_data %>% 
   filter(!(ethnicity_gender %in% c("total_men", "total_women")), !(ownership %in% "Proprietary")) %>% 
@@ -356,7 +350,7 @@ demographic_data_ownership$ethnicity_gender < factor(demographic_data_ownership$
 
 demographic_data_ownership
 
-demographic_data_ownership %>% 
+demographic_o <- demographic_data_ownership %>% 
   filter(!(ethnicity_gender %in% "total_enrollment")) %>%
   arrange(ethnicity_gender) %>% 
   ggplot(aes(x=ownership, y = total_count, fill = ethnicity_gender)) +
@@ -371,9 +365,7 @@ demographic_data_ownership %>%
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5),
         plot.subtitle = element_text(hjust = 0.5)) 
-```
 
-```{r, warning=FALSE}
 demographic_data_gender <- demographic_data %>% 
   filter(ethnicity_gender %in% c("total_men", "total_women")) %>% 
   ggplot(aes(x=ownership, y=count, fill=ethnicity_gender)) +
@@ -388,13 +380,7 @@ demographic_data_gender <- demographic_data %>%
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5),
         plot.subtitle = element_text(hjust = 0.5)) 
-demographic_data_gender  
-
-```
-
-
-```{r, warning=FALSE}
-financial_data <- financial_info() 
+  
 
 financial_data_pr <- financial_data %>% 
   group_by(ownership, city) %>% 
@@ -402,7 +388,7 @@ financial_data_pr <- financial_data %>%
 
 financial_data_pr
 
-financial_data_pr %>%
+financial_pr <- financial_data_pr %>%
   filter(!is.na(median_poverty_rate)) %>%
   ggplot() +
   aes(x = median_poverty_rate, y= ..density..) +
@@ -422,7 +408,7 @@ poverty_ownership <- financial_data %>%
   summarise(mean_pr = mean(poverty_rate, na.rm=TRUE)) %>% 
   filter(!(ownership %in% "Proprietary"))
 
-ggplot(poverty_ownership) +
+poverty_o <- ggplot(poverty_ownership) +
   aes(x = ownership, y = mean_pr) +
   geom_col(fill = "#112446") +
   labs(
@@ -432,10 +418,8 @@ ggplot(poverty_ownership) +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5),
         plot.subtitle = element_text(hjust = 0.5)) 
-```
 
-```{r, warning=FALSE}
-earnings_data <- earnings_info()
+
 instate_earning <- ggplot(earnings_data) +
   aes(x = In_State_Tuition, y = Median_Earnings) +
   geom_point(shape = "circle", size = 2, colour = "#112446") +
@@ -452,6 +436,44 @@ outstate_earning <-  ggplot(earnings_data) +
   theme(plot.title = element_text(hjust = 0.5),
         plot.subtitle = element_text(hjust = 0.5)) 
 
-grid.arrange(instate_earning, outstate_earning, ncol=2)
+earnings <- grid.arrange(instate_earning, outstate_earning, ncol=2)
+
+return(list(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8, demo, demographic_o, demographic_data_gender, financial_pr, poverty_o, earnings))
+}
 ```
+
+
+# Main function 
+Take the user input of :
+- state
+- ordering 
+- rows 
+- year 
+- ownership 
+- locale
+
+
+```{r, warning=FALSE, include=TRUE, echo=TRUE}
+main <- function() {
+  key = params$key
+  state = params$state
+  size = params$ordering
+  n = params$rows 
+  year = params$year
+  ownership = params$ownership
+  locale = params$locale
+  general_data <- general_info(key, state, size, n, year)
+  cost_data <- cost_info(key, state, cost = size, n, year)
+  admissions_data <- admissions_info(key, ownership, rate=size, n, year)
+  demographic_data <- demographic_info(key, state, size, locale, n, year)
+  financial_data <- financial_info(key, state, size, year)
+  earnings_data <- earnings_info(key, earnings = size, n, year)
+  exploration(general_data, cost_data, admissions_data, demographic_data, financial_data, earnings_data)
+}
+```
+
+```{r, warning=FALSE, include=TRUE, echo=TRUE}
+main()
+```
+
 
