@@ -283,34 +283,42 @@ earnings_info()
 
 # Data Exploration
 ```{r, warning=FALSE}
-tuition_data <- general_info(n=100)
-plot1 <- ggplot(tuition_data, aes(x=Ownership, y=Out_State_Tuition)) + geom_boxplot() + labs(y ="Out-of-State Tuition",
- title="Out-of-State Tuition by Ownership Type for 100 Largest NC Colleges")
+general_data <- general_info(n=100)
+plot1 <- ggplot(general_data, aes(x=Ownership, y=Size)) + geom_boxplot() + labs(title="Size by Ownership Type for State Colleges") + theme_minimal()
 plot1
-```
 
-```{r, warning=FALSE}
-admissions_data <- general_info(n=100)
-plot2 <- ggplot(tuition_data, aes(x=Admissions_Rate, y=In_State_Tuition)) + geom_point(aes(color=Ownership)) + labs(x="Admissions Rate", y="In-State Tuition",
- title="In-State Tuition vs Admissions Rate for 100 Largest NC Colleges")
+plot2 <- ggplot(general_data, aes(x=Admissions_Rate, y=In_State_Tuition)) + geom_point(aes(color=Ownership)) + labs(x="Admissions Rate", y="In-State Tuition", title="In-State Tuition vs Admissions Rate for State Colleges") + theme_minimal()
 plot2
+
+plot3 <- ggplot(general_data, aes(x=Admissions_Rate, y=Out_State_Tuition)) + geom_point(aes(color=Ownership)) + labs(x="Admissions Rate", y="Out-of-State Tuition", title="Out-of-State Tuition vs Admissions Rate for State Colleges") + theme_minimal()
+plot3
 ```
 
 ```{r, warning=FALSE, message=FALSE}
-testing_data <- admissions_info()
-testing_data2 <- testing_data %>%
-  mutate("Total_SAT"=(sumrow=SAT_Reading+SAT_Math))
+admissions_data <- admissions_info()
+admissions_data2 <- admissions_data %>%
+  mutate("Total_SAT"=(sumrow=SAT_Reading+SAT_Math), "Total_ACT"=(sumrow=ACT_English+ACT_Math))
 
-plot3 <- ggplot(testing_data2, aes(x=Admissions_Rate, y=Total_SAT)) + geom_point(aes(shape=Test_Requirements, color=Test_Requirements)) + geom_smooth(method=lm) + labs(x="Admissions Rate", y="Total SAT for Reading/Math", title="Total SAT Score vs Admissions Rate for the 50 Most Selective US Colleges")
-plot3
+plot4 <- ggplot(admissions_data2, aes(x=Admissions_Rate, y=Total_SAT)) + geom_point(aes(shape=Test_Requirements, color=Test_Requirements)) + geom_smooth(method=lm) + labs(x="Admissions Rate", y="Total SAT for Reading/Math", title="Total SAT Score vs Admissions Rate for US Colleges") + theme_minimal()
+plot4
+
+plot5 <- ggplot(admissions_data2, aes(x=Admissions_Rate, y=Total_ACT)) + geom_point(aes(shape=Test_Requirements, color=Test_Requirements)) + geom_smooth(method=lm) + labs(x="Admissions Rate", y="Total ACT for English/Math", title="Total ACT Score vs Admissions Rate for US Colleges") + theme_minimal()
+plot5
+
+plot6 <- ggplot(admissions_data2, aes(x=Total_SAT, y=Total_ACT)) + geom_point(aes(shape=Test_Requirements, color=Test_Requirements)) + geom_smooth(method=lm) + labs(x="Total SAT for Reading/Math", y="Total ACT for English/Math", title="Total ACT Score vs Total SAT Score for US Colleges") + theme_minimal()
+plot6
 ```
 
 ```{r, warning=FALSE, message=FALSE}
 costs_data <- cost_info(n=100)
 
-plot4 <- ggplot(costs_data, aes(x=Ownership, y=Total_In_State)) + geom_boxplot() + labs(y ="In-State Tuition",
- title="In-State Tuition by Ownership Type for 100 Most Expensive NC Colleges")
-plot4
+plot7 <- ggplot(costs_data, aes(x=Ownership, y=In_State_Tuition)) + geom_boxplot() + scale_y_continuous(trans="log10") + labs(y ="In-State Tuition",
+ title="In-State Tuition by Ownership Type for State Colleges") + theme_minimal()
+plot7
+
+plot8 <- ggplot(costs_data, aes(x=Ownership, y=Out_State_Tuition)) + geom_boxplot() + scale_y_continuous(trans="log10") + labs(y ="Out-of-State Tuition",
+ title="Out-of-State Tuition by Ownership Type for State Colleges") + theme_minimal()
+plot8
 ```
 
 
