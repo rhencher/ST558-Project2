@@ -294,43 +294,52 @@ earnings_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", earnin
 ```{r, warning=FALSE, include=TRUE, echo=TRUE}
 exploration <- function(general_data, cost_data, admissions_data, demographic_data, financial_data, earnings_data, state, locale) {
 
+# Summary table of data generated within the general_info function
 general_summary <- summary(general_data)
-  
+
+# Boxplot of Size by Ownership for data generated within the general_info function  
 size_by_ownership <- ggplot(general_data, aes(x=Ownership, y=Size)) + 
   geom_boxplot(fill = "#112446") + 
   labs(title="Size by Ownership Type for State Colleges") + 
   theme_minimal()
 
+# Scatterplot of Admissions Rate vs In-State Tuition for data generated within the general_info function
 instate_vs_adm <- ggplot(general_data, aes(x=Admissions_Rate, y=In_State_Tuition)) + 
   geom_point(aes(color=Ownership)) + 
   labs(x="Admissions Rate", y="In-State Tuition", title="In-State Tuition vs Admissions Rate for State Colleges") + 
   theme_minimal()
 
+# Scatterplot of Admissions Rate vs Out-of-State Tuition for data generated within the general_info function
 outstate_vs_adm <- ggplot(general_data, aes(x=Admissions_Rate, y=Out_of_State_Tuition)) + 
   geom_point(aes(color=Ownership)) + 
   labs(x="Admissions Rate", y="Out-of-State Tuition", title="Out-of-State Tuition vs Admissions Rate for State Colleges") + 
   theme_minimal()
-
+  
+# Addition of Total SAT and Total ACT variables to data generated within the admissions_info function
 admissions_data2 <- admissions_data %>%
   mutate("Total_SAT"=(sumrow=SAT_Reading+SAT_Math), "Total_ACT"=(sumrow=ACT_English+ACT_Math))
 
+# Scatterplot of Admissions Rate vs Total SAT with a regression line overlaid for data generated within the admissions_info function
 sat_vs_adm <- ggplot(admissions_data2, aes(x=Admissions_Rate, y=Total_SAT)) + 
   geom_point(aes(shape=Test_Requirements, color=Test_Requirements)) + 
   geom_smooth(method=lm) + labs(x="Admissions Rate", y="Total SAT for Reading/Math", title="Total SAT Score vs Admissions Rate for US Colleges") + 
   theme_minimal()
 
+# Scatterplot of Admissions Rate vs Total ACT with a regression line overlaid for data generated within the admissions_info function
 act_vs_adm <- ggplot(admissions_data2, aes(x=Admissions_Rate, y=Total_ACT)) + 
   geom_point(aes(shape=Test_Requirements, color=Test_Requirements)) + 
   geom_smooth(method=lm) + 
   labs(x="Admissions Rate", y="Total ACT for English/Math", title="Total ACT Score vs Admissions Rate for US Colleges") + 
   theme_minimal()
 
+# Scatterplot of Total SAT vs Total ACT with a regression line overlaid for data generated within the admissions_info function
 act_vs_sat <- ggplot(admissions_data2, aes(x=Total_SAT, y=Total_ACT)) + 
   geom_point(aes(shape=Test_Requirements, color=Test_Requirements)) + 
   geom_smooth(method=lm) + 
   labs(x="Total SAT for Reading/Math", y="Total ACT for English/Math", title="Total ACT Score vs Total SAT Score for US Colleges") + 
   theme_minimal()
 
+# Boxplot of Ownership by In-State Tuition with points overlaid for data generated within the cost_info function
 instate_by_ownership <- ggplot(cost_data, aes(x=Ownership, y=In_State_Tuition)) + 
   geom_boxplot(fill="#112446") + 
   scale_y_continuous(trans="log10") + 
@@ -338,6 +347,7 @@ instate_by_ownership <- ggplot(cost_data, aes(x=Ownership, y=In_State_Tuition)) 
   labs(y="In-State Tuition", title="In-State Tuition by Ownership Type for State Colleges") + 
   theme_minimal()
 
+# Boxplot of Ownership by Out-of-State Tuition with points overlaid for data generated within the cost_info function
 outstate_by_ownership <- ggplot(cost_data, aes(x=Ownership, y=Out_of_State_Tuition)) + 
   geom_boxplot(fill="#112446") + 
   scale_y_continuous(trans="log10") + 
@@ -345,14 +355,14 @@ outstate_by_ownership <- ggplot(cost_data, aes(x=Ownership, y=Out_of_State_Tuiti
   labs(y="Out-of-State Tuition", title="Out-of-State Tuition by Ownership Type for State Colleges") + 
   theme_minimal()
 
-
+# SNEHA TO ADD
 demographic_data_race <- demographic_data %>% 
   filter(!(Ethnicity_Gender %in% c("Total_Men", "Total_Women")), !(Ownership %in% "Proprietary")) %>% 
   group_by(Ownership, Ethnicity_Gender) %>% 
   summarise(Total_Count=sum(Count)) %>% 
   arrange(Total_Count, .by_group = TRUE)
 
-
+# SNEHA TO ADD
 demographic_ownership <- demographic_data_race %>% 
   filter(!(Ethnicity_Gender %in% "Total_Enrollment")) %>%
   arrange(Ethnicity_Gender) %>% 
@@ -364,12 +374,12 @@ demographic_ownership <- demographic_data_race %>%
     y="Total Student Count",
     title="Undergraduate Students enrolled for each Ownership by Ethnicity",
     subtitle=paste("State :", state, "; Locale :", locale)
-
   ) +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5),
         plot.subtitle = element_text(hjust = 0.5)) 
 
+# SNEHA TO ADD
 demographic_data_gender <- demographic_data %>% 
   filter(Ethnicity_Gender %in% c("Total_Men", "Total_Women")) %>% 
   ggplot(aes(x=Ownership, y=Count, fill=Ethnicity_Gender)) +
@@ -439,7 +449,8 @@ return(list(general_summary, size_by_ownership, instate_vs_adm, outstate_vs_adm,
 ```
 
 
-# Main Function 
+# Main Function  
+In order for the user to pull all of the information at once with one set of inputs, use the "Main Function" created below.  
 Take the user input of:  
 
 - state
