@@ -129,13 +129,10 @@ The user should provide input for five arguments:
 - `n` is the number of records returned (1-100)  
 - `year` requests data from a particular year if the user desires data other than the latest available
 ```{r admissions_function}
-admissions_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", ownership="private", rate="asc", n=50, year="latest")
+admissions_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr",rate="asc", n=50, year="latest")
 {
-  ownership <- ifelse(tolower(ownership)=="public", "1", 
-                      ifelse(tolower(ownership)=="private", "2", 
-                             ifelse(tolower(ownership)=="proprietary", "3", "ERROR")))  
         
-  url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&school.ownership=", ownership, "&per_page=", n, "&sort=admissions.admission_rate.overall:", rate, "&school.degrees_awarded.predominant=3&_fields=school.name,", year, ".admissions.admission_rate.overall,", year, ".admissions.test_requirements,", year, ".admissions.sat_scores.midpoint.critical_reading,", year, ".admissions.sat_scores.midpoint.writing,", year, ".admissions.sat_scores.midpoint.math,", year, ".admissions.act_scores.midpoint.english,", year, ".admissions.act_scores.midpoint.writing,", year, ".admissions.act_scores.midpoint.math")  
+  url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&per_page=", n, "&sort=admissions.admission_rate.overall:", rate, "&school.degrees_awarded.predominant=3&_fields=school.name,school.ownership,", year, ".admissions.admission_rate.overall,", year, ".admissions.test_requirements,", year, ".admissions.sat_scores.midpoint.critical_reading,", year, ".admissions.sat_scores.midpoint.writing,", year, ".admissions.sat_scores.midpoint.math,", year, ".admissions.act_scores.midpoint.english,", year, ".admissions.act_scores.midpoint.writing,", year, ".admissions.act_scores.midpoint.math")  
 
   data <- GET(url)  
   
@@ -157,6 +154,9 @@ admissions_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", owne
     
     admissions_data$Test_Requirements <- as.factor(admissions_data$Test_Requirements)
       levels(admissions_data$Test_Requirements) <- c("Required", "Recommended", "Neither required nor recommended", "Do not know", "Considered but not required")  
+      
+    admissions_data$Ownership <- as.factor(admissions_data$Ownership)
+        levels(admissions_data$Ownership) <- c("Public", "Private, Nonprofit", "Proprietary")  
   
   return(admissions_data)  
 }
@@ -329,6 +329,9 @@ admissions_df <- head(admissions_data, n=5)
 admissions_data2 <- admissions_data %>%
   mutate("Total_SAT"=(sumrow=SAT_Reading+SAT_Math), "Total_ACT"=(sumrow=ACT_English+ACT_Math))  
 
+# Contingency table for Test Requirement and Ownership by State 
+ownership_test_requirement <- table(admissions_data$Ownership, admissions_data$Test_Requirements)
+
 # Scatterplot of Admissions Rate vs Total SAT with a regression line overlaid for data generated within the admissions_info function
 sat_vs_adm <- ggplot(admissions_data2, aes(x=Admissions_Rate, y=Total_SAT)) + 
   geom_point(aes(shape=Test_Requirements, color=Test_Requirements)) + 
@@ -454,14 +457,14 @@ outstate_earning <-  ggplot(earnings_data) +
   theme(plot.title=element_text(hjust=0.5),
         plot.subtitle=element_text(hjust=0.5))  
 
-return(list(general_df, general_summary, size_by_ownership, instate_vs_adm, outstate_vs_adm, admissions_df, sat_vs_adm, act_vs_adm, act_vs_sat, cost_df, instate_by_ownership, outstate_by_ownership, demographic_df, demographic_data_race, demographic_ownership, demographic_data_gender, financial_df, financial_poverty_rate, poverty_rate_by_ownership, earnings_df, instate_earning, outstate_earning))
+return(list(general_df, general_summary, size_by_ownership, instate_vs_adm, outstate_vs_adm, admissions_df, ownership_test_requirement, sat_vs_adm, act_vs_adm, act_vs_sat, cost_df, instate_by_ownership, outstate_by_ownership, demographic_df, demographic_data_race, demographic_ownership, demographic_data_gender, financial_df, financial_poverty_rate, poverty_rate_by_ownership, earnings_df, instate_earning, outstate_earning))
 }
 ```
-*We start by exploring the general information data. This dataset is a compilation of the Tuition and Admission Details of schools in a particular state. Since the general data table consists of a substantial number of numeric columns, we draw summary statistics for these numerical columns. We then have a boxplot to see the measure of spread of the number of students for the colleges in the state separated by ownership. To understand if there is a correlation between tuition and the admission rate, we have a scatter plot for both in-state and out-of-state tuition by admission rate coded by ownership. We then analyze the admissions data consisting of the admissions rate and test details for schools in a particular state. We visualize the total SAT and ACT scores vs Admission Rates coded by Test Requirements to see if the total scores have a positive correlation with admission rate for schools. We also check if a higher ACT score implies a higher SAT score. We then move on to understand the cost perspective of these schools and understand if the ownership of schools affects the different tuition costs. We see the variability of in-state and out-of-state tuition costs by ownership.*
+*We start by exploring the general information data. This dataset is a compilation of the tuition and admission details for schools in a particular state. Since the general data table consists of a substantial number of numeric columns, we draw summary statistics for these numerical columns. We then have a boxplot to see the measure of spread of the number of students for the colleges in the state separated by ownership. To understand if there is a correlation between tuition and the admission rate, we have a scatter plot for both in-state and out-of-state tuition by admission rate coded by ownership. We then analyze the admissions data consisting of the admissions rate and test details for schools in a particular state. We visualize the total SAT and ACT scores vs Admission Rates coded by Test Requirements to see if the total scores have a positive correlation with admission rate for schools. We also check if a higher ACT score implies a higher SAT score. We then move on to understand the cost perspective of these schools and understand if the ownership of schools affects the different tuition costs. We also explore the variability of in-state and out-of-state tuition costs by ownership.*
 
-*Now that we have covered the different aspects of the schools, it would be pertinent to see the student information in these schools. We start by understanding the student diversity. We explore a school's diversity by understanding the number of students in each ethnicity and gender. We group ethnicities by the school's ownership and sum up the total count to see the dominant ethnicity of students in each ownership. We then see the total number of men and women in each ownership. Moving on to the financial backgrounds of students enrolled in these schools, we explore the financial data. We plot the distribution of poverty rates for the particular state and see the mean poverty rate of schools in each ownership. Finally, we were inquisitive to know the prospective outcome of the students graduating from these schools to see how much they spent vs how much they earned after graduating. For this, we have a scatter plot for the median earnings of students.*
+*Now that we have covered the different aspects of the schools, it would be pertinent to see the student information in these schools. We start by understanding the student diversity. We explore a school's diversity by understanding the number of students within each level of ethnicity and gender. We group ethnicities by the school's ownership and sum up the total count to see the dominant ethnicity of students within each ownership. We then see the total number of men and women in each ownership. Moving on to the financial backgrounds of students enrolled in these schools, we explore the financial data. We plot the distribution of poverty rates for the particular state and see the mean poverty rate of schools in each ownership. Finally, we were inquisitive to know the prospective outcome of the students graduating from these schools to see how much they spent vs how much they earned after graduating. For this, we have a scatter plot for the median earnings of students.*
 
-*For each of the graphics above, we begin with the `ggplot` function to create a coordinate system from which we can then build. We next add a "geom_function" such as `geom_bar`, `geom_point`, or `geom_smooth` in order to add the specified layer to our coordinate system. We next use `labs` in order to add more informative and descriptive plot titles, axis labels, and key titles. To maintain consistency we have used `theme_minimal()` across all plots. It is important to note that not every plot could have been created with the data generated by the API. We ran transformations, grouping, and adding new variables from the existing variables to get the desired plots.*
+*For each of the graphics above, we begin with the `ggplot` function to create a coordinate system from which we can then build. We next add a "geom_function" such as `geom_bar`, `geom_point`, or `geom_smooth` in order to add the specified layer to our coordinate system. We next use `labs` in order to add more informative and descriptive plot titles, axis labels, and key titles. To maintain consistency we have used `theme_minimal()` across all plots. It is important to note that not every plot could have been created with the data generated by the API. We ran transformations, groupings, and added new variables from the existing variables to get the desired plots.*
 
 
 # Main Function  
@@ -486,7 +489,7 @@ main <- function() {
   locale = params$locale
   general_data <- general_info(key, state, size, n, year)
   cost_data <- cost_info(key, state, cost = size, n, year)
-  admissions_data <- admissions_info(key, ownership, rate=size, n, year)
+  admissions_data <- admissions_info(key, rate=size, n, year)
   demographic_data <- demographic_info(key, state, size, locale, n, year)
   financial_data <- financial_info(key, state, size, year)
   earnings_data <- earnings_info(key, earnings = size, n, year)
