@@ -24,7 +24,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 The goal for this project is to create a vignette about contacting an API using functions created to query, parse, and return well-structured data. Then, to use the functions to obtain data from the API and do some exploratory data analysis.  
 
+In order to demonstrate these skills, we will contact the College Scorecard API from the US Department of Education. We will then create functions in order to return topic-specific data for a user interested in finding out information on colleges in the US. More specifically, we will create a function to provide general information on colleges in a particular state, a function to provide information on tuition and other incurred costs, a function to provide information on admissions rates and testing requirements, a function to provide demographic information on the student body, a function to provide student financial information, and a function to provide information on earnings of students ten years after entry.  
+
+Although the College Scorecard API only has one endpoint, there are hundreds of possible mutations for this enormous set of data, several combinations of which are explored below. 
+
 # Required Packages  
+We must first install the necessary packages to contact our API and to then create graphics. The following packages were used:  
 
 `tidyverse`: a collection of R packages that are designed to work together to allow us to read in, transform, and visualize data  
 `httr`: allows us to use the `GET` function to access the API   
@@ -42,10 +47,11 @@ library(forcats)
 ```
 
 # Functions  
-Each of the functions below will contact the chosen API and return well-formatted, parsed data in the form of data frames.  
+Each of the functions below will contact the College Scorecard API and return well-formatted, parsed data in the form of data frames on the specified topics.  
 
 ## `general_info()`  
-The following function returns general information on either the largest or smallest *n* colleges in a particular state. The user should provide input for five arguments:  
+The following function returns general information on either the largest or smallest *n* colleges in a particular state. The variables returned were selected based on "typical" factors discussed when selecting a college.  
+The user should provide input for five arguments:  
 - `key` requests the user's personal key to access the API  
 - `state` requests which state the user would like to retrieve info for using the 2-character abbreviation for the state  
 - `size` requests whether the user would like data on large or small schools by selecting "desc" or "asc" respectively  
@@ -57,6 +63,7 @@ general_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", state="
   url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&school.state=", state, "&per_page=", n, "&sort=student.size:", size, "&_fields=school.name,school.ownership,", year, ".student.size,", year, ".admissions.admission_rate.overall,", year, ".cost.tuition.in_state,", year, ".cost.tuition.out_of_state")
 
   data <- GET(url)
+  
   parsed_data <- fromJSON(rawToChar(data$content))
   
   parsed_data$results$school.ownership <- as.factor(parsed_data$results$school.ownership)
@@ -65,15 +72,21 @@ general_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", state="
   general_data <-
     parsed_data$results %>%
     as_tibble() %>%
-    select("Name"=ends_with("name"), "Ownership"=ends_with("ownership"), "Size"=ends_with("size"), "Admissions_Rate"=ends_with("overall"), "In_State_Tuition"=ends_with("in_state"), "Out_of_State_Tuition"=ends_with("out_of_state"))
+    select("Name"=ends_with("name"), 
+    "Ownership"=ends_with("ownership"), 
+    "Size"=ends_with("size"), 
+    "Admissions_Rate"=ends_with("overall"), 
+    "In_State_Tuition"=ends_with("in_state"), 
+    "Out_of_State_Tuition"=ends_with("out_of_state"))
 
-return(general_data)
+  return(general_data)
 }
-general_info()
 ```
+*In order to create the function above, we first set up our arguments to allow the user to return a more customized set of data. Defaults were set to our personal access key for the College Scorecard API, our home state of NC, descending results by college size, 50 entries to be returned, and the latest information available through the API. We then utilized the `paste0` function in order to incorporate these arguments into the URL call. The `GET` function allows us to then call the URL and the `fromJSON` function allows us to read the JSON-formatted content into R. We then saved just the "results" portion of our data, excluding the metadata information, as a tibble using the `as_tibble` function and used `select` to order and rename the variables. Utilizing `ends_with` enabled us to rename the variables more efficiently without having to type out the lengthy default name. Finally, we used the `as.factor` function to create descriptions for the various levels of the "ownership" variable that add context to our variable, instead of simple numeric coding. This new tibble is then designated as our object to be returned for this function.*  
 
 ## `cost_info()`  
-The following function returns cost info on either the most or least expensive *n* colleges in a particular state by in-state tuition. The user should provide input for five arguments:  
+The following function returns cost information on either the most or least expensive *n* colleges in a particular state by in-state tuition. Variables such as in-state & out-of-state tuition, in addition to books & room & board are included.  
+The user should provide input for five arguments:  
 - `key` requests the user's personal key to access the API  
 - `state` requests which state the user would like to retrieve info for using the 2-character abbreviation for the state  
 - `cost` requests whether the user would like data on expensive or more affordable schools by selecting "desc" or "asc" respectively  
@@ -85,24 +98,31 @@ cost_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", state="NC"
   url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&school.state=", state, "&per_page=", n, "&sort=cost.tuition.in_state:", cost, "&_fields=school.name,school.ownership,", year, ".cost.tuition.in_state,", year, ".cost.tuition.out_of_state,", year, ".cost.booksupply,", year, ".cost.roomboard.oncampus,", year, ".cost.roomboard.offcampus")
 
   data <- GET(url)
+  
   parsed_data <- fromJSON(rawToChar(data$content))
 
   cost_data <-
     parsed_data$results %>%
     as_tibble() %>%
-    select("Name"=ends_with("name"), "Ownership"=ends_with("ownership"), "In_State_Tuition"=contains("in"), "Out_of_State_Tuition"=contains("out"), "Books_Supplies"=ends_with("supply"), "Room_Board_On"=ends_with("oncampus"), "Room_Board_Off"=ends_with("offcampus"))
+    select("Name"=ends_with("name"), 
+    "Ownership"=ends_with("ownership"), 
+    "In_State_Tuition"=contains("in"), 
+    "Out_of_State_Tuition"=contains("out"), 
+    "Books_Supplies"=ends_with("supply"), 
+    "Room_Board_On"=ends_with("oncampus"), 
+    "Room_Board_Off"=ends_with("offcampus"))
   
     cost_data$Ownership <- as.factor(cost_data$Ownership)
       levels(cost_data$Ownership) <- c("Public", "Private, Nonprofit", "Proprietary")
       
-return(cost_data)
+  return(cost_data)
 }
-
-cost_info()
 ```
+*In order to create the function above, we again start by setting up our arguments to allow the user to return a more customized set of data. Defaults were set to our personal access key for the College Scorecard API, our home state of NC, descending results by in-state tuition costs, 50 entries to be returned, and the latest information available through the API. We again utilized the `paste0` function in order to incorporate these arguments into the URL call. The `GET` function allows us to again call the URL and the `fromJSON` function allows us to read the JSON-formatted content into R. We then saved just the "results" portion of our data, excluding the metadata information, as a tibble using the `as_tibble` function and used `select` to order and rename the variables. `ends_with` is once again utilized to rename the variables more efficiently. Finally, we used the `as.factor` function to again create more informative descriptions for the various levels of the "ownership" variable. This new tibble is then designated as our object to be returned for this function.*  
 
 ## `admissions_info()`  
-The following function returns admissions info on *n* colleges under a particular "ownership" category. The user should provide input for five arguments:  
+The following function returns admissions info on *n* colleges under a particular "ownership" category. The selected variables allow the user to explore admissions rates and testing scores & requirements.  
+The user should provide input for five arguments:  
 - `key` requests the user's personal key to access the API  
 - `ownership` requests whether the user would like to retrieve admissions info for "public", "private" (nonprofit), or "proprietary" colleges  
 - `rate` requests whether the user would like data on less competitive or more selective schools by selecting "desc" or "asc" respectively  
@@ -118,28 +138,38 @@ admissions_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", owne
   url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&school.ownership=", ownership, "&per_page=", n, "&sort=admissions.admission_rate.overall:", rate, "&school.degrees_awarded.predominant=3&_fields=school.name,", year, ".admissions.admission_rate.overall,", year, ".admissions.test_requirements,", year, ".admissions.sat_scores.midpoint.critical_reading,", year, ".admissions.sat_scores.midpoint.writing,", year, ".admissions.sat_scores.midpoint.math,", year, ".admissions.act_scores.midpoint.english,", year, ".admissions.act_scores.midpoint.writing,", year, ".admissions.act_scores.midpoint.math")
 
   data <- GET(url)
+  
   parsed_data <- fromJSON(rawToChar(data$content))
   
   admissions_data <-
     parsed_data$results %>%
     as_tibble() %>%
-    select("Name"=ends_with("name"), "Ownership"=ends_with("ownership"), "Admissions_Rate"=ends_with("overall"), "Test_Requirements"=ends_with("requirements"), "SAT_Reading"=ends_with("reading"), "SAT_Writing"=ends_with("sat_scores.midpoint.writing"), "SAT_Math"=ends_with("sat_scores.midpoint.math"), "ACT_English"=ends_with("english"), "ACT_Writing"=ends_with("act_scores.midpoint.writing"), "ACT_Math"=ends_with("act_scores.midpoint.math"))
+    select("Name"=ends_with("name"), 
+    "Ownership"=ends_with("ownership"), 
+    "Admissions_Rate"=ends_with("overall"), 
+    "Test_Requirements"=ends_with("requirements"), 
+    "SAT_Reading"=ends_with("reading"), 
+    "SAT_Writing"=ends_with("sat_scores.midpoint.writing"), 
+    "SAT_Math"=ends_with("sat_scores.midpoint.math"), 
+    "ACT_English"=ends_with("english"), 
+    "ACT_Writing"=ends_with("act_scores.midpoint.writing"), 
+    "ACT_Math"=ends_with("act_scores.midpoint.math"))
     
     admissions_data$Test_Requirements <- as.factor(admissions_data$Test_Requirements)
       levels(admissions_data$Test_Requirements) <- c("Required", "Recommended", "Neither required nor recommended", "Do not know", "Considered but not required")
   
-return(admissions_data)
+  return(admissions_data)
 }
-admissions_info()
 ```
+*In order to create the function above, we use a similar process as with the previous two functions; however, after setting the default input for each argument, we start by using a series of `ifelse` functions to make the input for "ownership" more user-friendly. We first set up an `ifelse` statement specifying that if the user designates "public" for the input, then we would be looking to see whether the ownership status is a "1" in the data set. We then use an additional `ifelse` function to indicate that if the ownership status is not "1" (i.e. "FALSE"), we investigate whether it is true or false that the ownership status is "2". We then use one additional `ifelse` statement to investigate whether the ownership status is "3", designating that an error message should appear if it is neither a "1", "2", or a "3". In conjunction with the `ifelse` function, we use `tolower` in order to allow the user to type in the ownership status without worrying about capitalization. The steps that follow are then identical to those in the functions above... We use the `GET` and `fromJSON` functions to retrieve the data. We then convert it to a tibble and reorder and rename the variables. This time; however, we are using the `as.factor` function to create more contextual descriptions for the variable called "Admissions Requirements". This variable was previously displaying a numeric code, but we were able to designate better descriptions for each level using information provided on the College Scorecard website.*  
 
 ## `demographic_info()`  
-The following function returns demographic  information of the school based on the location info on *n* colleges. The user should provide input four arguments:  
+The following function returns demographic information for students at *n* colleges, selected based on the location type. Race & ethnicity are the primary variables explored.  
+The user should provide input four arguments:  
 - `key` requests the user's personal key to access the API  
-- `locale` requests the user to mention if they would like to see data on the location of the school.(city/suburb/town/rural)
-- `rate` requests whether the user would like data on the number of students in the school by selecting "desc" or "asc" respectively  
+- `locale` requests whether the user would like to retrieve demographic info for colleges in a "city", "suburb", "town" or "rural" location  
+- `size` requests whether the user would like data on large or small schools by selecting "desc" or "asc" respectively    
 - `n` is the number of records returned (1-100)
-
 ```{r}
 demographic_info <- function(key="k42psBgICW3DEe6eS1gc7AxbTTYtOwOGN9URGVuT", state = "NC", size = "asc", locale="town", n=50, year= "latest")
 {
@@ -151,6 +181,7 @@ demographic_info <- function(key="k42psBgICW3DEe6eS1gc7AxbTTYtOwOGN9URGVuT", sta
     url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&school.state=", state, "&school.locale=", location, "&per_page=", n, "&sort=student.size:", size, "&_fields=school.name,school.ownership,school.city,", year, ".student.size,", year, ".student.demographics.race_ethnicity.aian,", year, ".student.demographics.race_ethnicity.nhpi,", year, ".student.demographics.race_ethnicity.asian,", year, ".student.demographics.race_ethnicity.black,", year, ".student.demographics.race_ethnicity.white,", year, ".student.demographics.race_ethnicity.hispanic,", year, ".student.demographics.race_ethnicity.unknown,", year, ".student.demographics.men,", year, ".student.demographics.women")
   
   data <- GET(url)
+  
   parsed_data <- fromJSON(rawToChar(data$content))
   
   demographic_data <-
@@ -168,68 +199,74 @@ demographic_info <- function(key="k42psBgICW3DEe6eS1gc7AxbTTYtOwOGN9URGVuT", sta
            "Hispanic"=ends_with("hispanic"),
            "Unknown"=ends_with("unknown"),
            "Men"=ends_with("men"),
-           "Women"=ends_with("women")
-           )
+           "Women"=ends_with("women"))
   
-  demographic_data$Ownership <- as.factor(demographic_data$Ownership)
+      demographic_data$Ownership <- as.factor(demographic_data$Ownership)
         levels(demographic_data$Ownership) <- c("Public", "Private, Nonprofit", "Proprietary")
   
-  demographic_data <- demographic_data %>% 
-    mutate(Total_AIAN=round(Total_Enrollment*AIAN), 
-           Total_NHPI=round(Total_Enrollment*NHPI), 
-           Total_Asian=round(Total_Enrollment*Asian), 
-           Total_Black=round(Total_Enrollment*Black),
-           Total_White=round(Total_Enrollment*White), 
-           Total_Hispanic=round(Total_Enrollment*Hispanic),
-           Total_Unknown=round(Total_Enrollment*Unknown),
-           Total_Men=round(Total_Enrollment*Men1),
-           Total_Women=round(Total_Enrollment*Women)) %>% 
-    select(Name, City, Ownership, starts_with("Total_")) %>% 
-    pivot_longer(cols=!c(Name, City, Ownership), names_to="Ethnicity_Gender", values_to="Count") 
+    demographic_data <- demographic_data %>% 
+      mutate(Total_AIAN=round(Total_Enrollment*AIAN), 
+             Total_NHPI=round(Total_Enrollment*NHPI), 
+             Total_Asian=round(Total_Enrollment*Asian), 
+             Total_Black=round(Total_Enrollment*Black),
+             Total_White=round(Total_Enrollment*White), 
+             Total_Hispanic=round(Total_Enrollment*Hispanic),
+             Total_Unknown=round(Total_Enrollment*Unknown),
+             Total_Men=round(Total_Enrollment*Men1),
+             Total_Women=round(Total_Enrollment*Women)) %>% 
+      select(Name, City, Ownership, starts_with("Total_")) %>% 
+      pivot_longer(cols=!c(Name, City, Ownership), names_to="Ethnicity_Gender", values_to="Count") 
   
-return(demographic_data)
+  return(demographic_data)
 }
-demographic_info()
 ```
+*In order to create the function above, we begin with the same strategy as with the previous function. However, instead of making the input for the ownership variable more user-friendly, we use `ifelse` statements to make the input for the "locale" variable more user-friendly. The steps that follow are then identical to those in all of the functions above... We use the `GET` and `fromJSON` functions to retrieve the data. We then convert it to a tibble with the `as_tibble` function and reorder and rename the variables with the `select` function. We then once again use the `as.factor` function to create more contextual descriptions for the variable called "Ownership". This variable was previously displaying a numeric code, but we were able to designate better descriptions for each level using information provided on the College Scorecard website. Next, we use the `mutate` function to create new variables to display the total number of students for a particular demographic, instead of just the proportion. We the use `pivot_longer` to take the wide-format data and to convert it to long-format data. Finally, we indicate that we would like to return this new data frame.*  
 
 ## `financial_info()`  
-The following function returns student financial information on either the largest or smallest *n* colleges in a particular state. The user should provide input for five arguments:  
+The following function returns student financial information on either the largest or smallest *n* colleges in a particular state. Variables selected include median family income, poverty rate, and student debt. 
+The user should provide input for five arguments:  
 - `key` requests the user's personal key to access the API  
 - `state` requests which state the user would like to retrieve info for using the 2-character abbreviation for the state  
 - `size` requests whether the user would like data on large or small schools by selecting "desc" or "asc" respectively  
 - `n` is the number of records returned (1-100)  
 - `year` requests data from a particular year if the user desires data other than the latest available
-
 ```{r}
 financial_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", state="NC", size="desc", n=50, year="latest")
 {
   url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&school.state=", state, "&per_page=", n, "&sort=student.size:", size, "&_fields=school.name,school.ownership,school.city,", year, ".student.size,", year, ".student.demographics.poverty_rate,", year, ".student.demographics.median_family_income,", year, ".aid.median_debt.female_students,", year, ".aid.median_debt.male_students")
 
   data <- GET(url)
+  
   parsed_data <- fromJSON(rawToChar(data$content))
   
   financial_data <- 
     parsed_data$results %>%
     as_tibble() %>%
 
-    select("Name"=ends_with("name"), "Ownership"=ends_with("ownership"), "City"=ends_with("city"), "Size"=ends_with("size"), "Poverty_Rate"=ends_with("poverty_rate"), "Median_Family_Income"=ends_with("income"), "Female_Median_Debt"=ends_with("female_students"), "Male_Median_Debt"=ends_with("debt.male_students"))
+    select("Name"=ends_with("name"), 
+    "Ownership"=ends_with("ownership"), 
+    "City"=ends_with("city"), 
+    "Size"=ends_with("size"), 
+    "Poverty_Rate"=ends_with("poverty_rate"), 
+    "Median_Family_Income"=ends_with("income"), 
+    "Female_Median_Debt"=ends_with("female_students"), 
+    "Male_Median_Debt"=ends_with("debt.male_students"))
   
     financial_data$Ownership <- as.factor(financial_data$Ownership)
       levels(financial_data$Ownership) <- c("Public", "Private, Nonprofit", "Proprietary")
 
-return(financial_data)
+  return(financial_data)
 }
-
-financial_info()
 ```
+*In order to create the function above, we again start by setting up our arguments to allow the user to return a more customized set of data. Defaults were set to our personal access key for the College Scorecard API, our home state of NC, descending results by school size, 50 entries to be returned, and the latest information available through the API. We again utilized the `paste0` function in order to incorporate these arguments into the URL call. The `GET` function allows us to again call the URL and the `fromJSON` function allows us to read the JSON-formatted content into R. We then saved just the "results" portion of our data, excluding the metadata information, as a tibble using the `as_tibble` function and used `select` to order and rename the variables. `ends_with` is once again utilized to rename the variables more efficiently. Finally, we used the `as.factor` function to again create more informative descriptions for the various levels of the "ownership" variable. This new tibble is then designated as our object to be returned for this function.*  
 
 ## `earnings_info()`  
-The following function returns earnings information on *n* colleges with either the highest or lowest median student earnings 10 years after entry. The user should provide input for four arguments:  
+The following function returns earnings information on *n* colleges with either the highest or lowest median student earnings 10 years after entry.  In addition to returning a variable for median earnings, variables for mean earnings by gender are also included. Finally, tuition costs are included in this data frame so that the user may draw comparisions between cost and future earnings.  
+The user should provide input for four arguments:  
 - `key` requests the user's personal key to access the API  
 - `earnings` requests whether the user would like data on schools whose students are the highest earners or lowest earners by selecting "desc" or "asc" respectively  
 - `n` is the number of records returned (1-100)  
 - `year` requests data from a particular year if the user desires data other than the latest available
-
 ```{r}
 earnings_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", earnings="desc", n=50, year="latest")
 {
@@ -241,12 +278,17 @@ earnings_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", earnin
   earnings_data <-
     parsed_data$results %>%
     as_tibble() %>%
-    select("Name"=ends_with("name"), "In_State_Tuition"=ends_with("in_state"), "Out_of_State_Tuition"=ends_with("out_of_state"), "Median_Earnings"=ends_with("median"), "Mean_For_Females"=ends_with("female_students"), "Mean_For_Males"=ends_with("mean_earnings.male_students"))
+    select("Name"=ends_with("name"), 
+    "In_State_Tuition"=ends_with("in_state"), 
+    "Out_of_State_Tuition"=ends_with("out_of_state"), 
+    "Median_Earnings"=ends_with("median"), 
+    "Mean_For_Females"=ends_with("female_students"), 
+    "Mean_For_Males"=ends_with("mean_earnings.male_students"))
 
-return(earnings_data)
+  return(earnings_data)
 }
-earnings_info()
 ```
+*In order to create this final function above, we again start by setting up our arguments to allow the user to return a more customized set of data. Defaults were set to our personal access key for the College Scorecard API, descending results by earnings 10 years after entry, 50 entries to be returned, and the latest information available through the API. We again utilized the `paste0` function in order to incorporate these arguments into the URL call. The `GET` function allows us to again call the URL and the `fromJSON` function allows us to read the JSON-formatted content into R. We then saved just the "results" portion of our data, excluding the metadata information, as a tibble using the `as_tibble` function and used `select` to order and rename the variables. `ends_with` is once again utilized to rename the variables more efficiently. This new tibble is then, once again, designated as our object to be returned for this function.*  
 
 # Data Exploration
 ```{r, warning=FALSE, include=TRUE, echo=TRUE}
@@ -415,16 +457,13 @@ return(list(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8, demo, demogr
 
 
 # Main Function 
-Take the user input of:
-
+Take the user input of:  
 - state
 - ordering 
 - rows 
 - year 
 - ownership 
 - locale
-
-
 ```{r, warning=FALSE, include=TRUE, echo=TRUE}
 main <- function() {
   key = params$key
@@ -443,6 +482,7 @@ main <- function() {
   exploration(general_data, cost_data, admissions_data, demographic_data, financial_data, earnings_data, state, locale)
 }
 ```
+*The function created above allows the user to provide input for the set of parameters just one time at the very top of the code and then applies those choices to all of the previous functions discussed. For instance, this makes it easy for a user who is interested in staying in a particular state to research varying topics on colleges just in the state of interest. It also makes it easy to pull data for a specific year without having to type it as an argument into each separate function.*  
 
 ```{r, warning=FALSE, include=TRUE, echo=TRUE}
 main()
