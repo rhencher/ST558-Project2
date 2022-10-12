@@ -36,7 +36,8 @@ We must first install the necessary packages to contact our API and to then crea
 `jsonlite`: allows us to access the `fromJSON` function to convert JSON data to a data frame  
 `ggplot2`: a package in the tidyverse that we will use for creating graphics  
 `gridExtra`: allows us to arrange plots in a grid  
-`forcats`: TBD
+`forcats`: TBD  
+`stingr`: allows us to manipulate individual characters within strings
 ```{r packages, message=FALSE}
 library(tidyverse)
 library(httr)
@@ -44,6 +45,7 @@ library(jsonlite)
 library(ggplot2)
 library(gridExtra)
 library(forcats)
+library(stringr)
 ```
 
 # Functions  
@@ -417,7 +419,7 @@ instate_earning <- ggplot(earnings_data) +
   aes(x=In_State_Tuition, y=Median_Earnings) +
   geom_point(shape="circle", size=2, colour="#112446") +
   geom_smooth(span=0.75) +
-  labs(x="In-State Tuition", y="Median Earnings (10 yrs after entry)", title="Median Earnings vs In-State Tuition") +
+  labs(x="In-State Tuition", y="Median Earnings (10 yrs after entry)", title=str_wrap("Median Earnings vs In-State Tuition", 20)) +
   theme_minimal() +
   theme(plot.title=element_text(hjust=0.5),
         plot.subtitle=element_text(hjust=0.5))  
@@ -427,7 +429,7 @@ outstate_earning <-  ggplot(earnings_data) +
   aes(x=Out_of_State_Tuition, y=Median_Earnings) +
   geom_point(shape="circle", size=2, colour="#112446") +
   geom_smooth(span=0.75) +
-  labs(x="Out-of-State Tuition", y="Median Earnings (10 yrs after entry)", title="Median Earnings vs Out-of-State Tuition") +
+  labs(x="Out-of-State Tuition", y="Median Earnings (10 yrs after entry)", title=str_wrap("Median Earnings vs Out-of-State Tuition", 20)) +
   theme_minimal() +
   theme(plot.title=element_text(hjust=0.5),
         plot.subtitle=element_text(hjust=0.5))  
@@ -469,7 +471,7 @@ main <- function() {
 ```
 *The function created above allows the user to provide input for the set of parameters just one time at the very top of the code and then applies those choices to all of the previous functions discussed. For instance, this makes it easy for a user who is interested in staying in a particular state to research varying topics on colleges just in the state of interest. It also makes it easy to pull data for a specific year without having to type it as an argument into each separate function.*  
 
-```{r, warning=FALSE, include=TRUE, echo=TRUE}
+```{r, warning=FALSE, message=FALSE, include=TRUE, echo=TRUE}
 result_list <- main()
 for( i in 1:length(result_list)){
   if(i == length(result_list)){
