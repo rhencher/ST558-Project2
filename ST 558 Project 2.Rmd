@@ -497,6 +497,10 @@ main <- function() {
 ```
 *The function created above allows the user to provide input for the set of parameters just one time at the very top of the code and then applies those choices to all of the previous functions discussed. For instance, this makes it easy for a user who is interested in staying in a particular state to research varying topics on colleges just in the state of interest. It also makes it easy to pull data for a specific year without having to type it as an argument into each separate function.*  
 
+# Putting it all together
+
+Finally we call the main function and generate the report for the user inputs. The function stores the visualizations that are returned as a list object. It then iterates through the list object and prints out the plots neatly.
+
 ```{r}
 result_list <- main()
 for( i in 1:length(result_list)){
@@ -512,3 +516,4 @@ for( i in 1:length(result_list)){
 }
 grid.arrange(instate_earning, outstate_earning, ncol=2)
 ```
+
