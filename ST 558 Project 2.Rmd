@@ -55,6 +55,7 @@ The following function returns general information on either the largest or smal
 general_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", state="NC", size="desc", n=50, year="latest")
 {
   url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&school.state=", state, "&per_page=", n, "&sort=student.size:", size, "&_fields=school.name,school.ownership,", year, ".student.size,", year, ".admissions.admission_rate.overall,", year, ".cost.tuition.in_state,", year, ".cost.tuition.out_of_state")
+
   data <- GET(url)
   parsed_data <- fromJSON(rawToChar(data$content))
   
@@ -65,6 +66,7 @@ general_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", state="
     parsed_data$results %>%
     as_tibble() %>%
     select("Name"=ends_with("name"), "Ownership"=ends_with("ownership"), "Size"=ends_with("size"), "Admissions_Rate"=ends_with("overall"), "In_State_Tuition"=ends_with("in_state"), "Out_of_State_Tuition"=ends_with("out_of_state"))
+
 return(general_data)
 }
 general_info()
@@ -81,8 +83,10 @@ The following function returns cost info on either the most or least expensive *
 cost_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", state="NC", cost="desc", n=50, year="latest")
 {
   url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&school.state=", state, "&per_page=", n, "&sort=cost.tuition.in_state:", cost, "&_fields=school.name,school.ownership,", year, ".cost.tuition.in_state,", year, ".cost.tuition.out_of_state,", year, ".cost.booksupply,", year, ".cost.roomboard.oncampus,", year, ".cost.roomboard.offcampus")
+
   data <- GET(url)
   parsed_data <- fromJSON(rawToChar(data$content))
+
   cost_data <-
     parsed_data$results %>%
     as_tibble() %>%
@@ -90,8 +94,10 @@ cost_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", state="NC"
   
     cost_data$Ownership <- as.factor(cost_data$Ownership)
       levels(cost_data$Ownership) <- c("Public", "Private, Nonprofit", "Proprietary")
+      
 return(cost_data)
 }
+
 cost_info()
 ```
 
@@ -110,6 +116,7 @@ admissions_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", owne
                              ifelse(tolower(ownership)=="proprietary", "3", "ERROR"))) 
         
   url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&school.ownership=", ownership, "&per_page=", n, "&sort=admissions.admission_rate.overall:", rate, "&school.degrees_awarded.predominant=3&_fields=school.name,", year, ".admissions.admission_rate.overall,", year, ".admissions.test_requirements,", year, ".admissions.sat_scores.midpoint.critical_reading,", year, ".admissions.sat_scores.midpoint.writing,", year, ".admissions.sat_scores.midpoint.math,", year, ".admissions.act_scores.midpoint.english,", year, ".admissions.act_scores.midpoint.writing,", year, ".admissions.act_scores.midpoint.math")
+
   data <- GET(url)
   parsed_data <- fromJSON(rawToChar(data$content))
   
@@ -197,18 +204,22 @@ The following function returns student financial information on either the large
 financial_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", state="NC", size="desc", n=50, year="latest")
 {
   url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&school.state=", state, "&per_page=", n, "&sort=student.size:", size, "&_fields=school.name,school.ownership,school.city,", year, ".student.size,", year, ".student.demographics.poverty_rate,", year, ".student.demographics.median_family_income,", year, ".aid.median_debt.female_students,", year, ".aid.median_debt.male_students")
+
   data <- GET(url)
   parsed_data <- fromJSON(rawToChar(data$content))
   
   financial_data <- 
     parsed_data$results %>%
     as_tibble() %>%
+
     select("Name"=ends_with("name"), "Ownership"=ends_with("ownership"), "City"=ends_with("city"), "Size"=ends_with("size"), "Poverty_Rate"=ends_with("poverty_rate"), "Median_Family_Income"=ends_with("income"), "Female_Median_Debt"=ends_with("female_students"), "Male_Median_Debt"=ends_with("debt.male_students"))
   
     financial_data$Ownership <- as.factor(financial_data$Ownership)
       levels(financial_data$Ownership) <- c("Public", "Private, Nonprofit", "Proprietary")
+
 return(financial_data)
 }
+
 financial_info()
 ```
 
@@ -223,12 +234,15 @@ The following function returns earnings information on *n* colleges with either 
 earnings_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", earnings="desc", n=50, year="latest")
 {
   url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&per_page=", n, "&sort=earnings.10_yrs_after_entry.median:", earnings, "&school.degrees_awarded.predominant=3&_fields=school.name,", year, ".cost.tuition.in_state,", year, ".cost.tuition.out_of_state,", year, ".earnings.10_yrs_after_entry.median,", year, ".earnings.10_yrs_after_entry.mean_earnings.female_students,", year, ".earnings.10_yrs_after_entry.mean_earnings.male_students")
+
   data <- GET(url)
   parsed_data <- fromJSON(rawToChar(data$content))
+
   earnings_data <-
     parsed_data$results %>%
     as_tibble() %>%
     select("Name"=ends_with("name"), "In_State_Tuition"=ends_with("in_state"), "Out_of_State_Tuition"=ends_with("out_of_state"), "Median_Earnings"=ends_with("median"), "Mean_For_Females"=ends_with("female_students"), "Mean_For_Males"=ends_with("mean_earnings.male_students"))
+
 return(earnings_data)
 }
 earnings_info()
@@ -237,6 +251,7 @@ earnings_info()
 # Data Exploration
 ```{r, warning=FALSE, include=TRUE, echo=TRUE}
 exploration <- function(general_data, cost_data, admissions_data, demographic_data, financial_data, earnings_data, state, locale) {
+
 summary(general_data)
   
 plot1 <- ggplot(general_data, aes(x=Ownership, y=Size)) + 
@@ -244,35 +259,42 @@ plot1 <- ggplot(general_data, aes(x=Ownership, y=Size)) +
   labs(title="Size by Ownership Type for State Colleges") + 
   theme_minimal()
 plot1
+
 plot2 <- ggplot(general_data, aes(x=Admissions_Rate, y=In_State_Tuition)) + 
   geom_point(aes(color=Ownership)) + 
   labs(x="Admissions Rate", y="In-State Tuition", title="In-State Tuition vs Admissions Rate for State Colleges") + 
   theme_minimal()
 plot2
+
 plot3 <- ggplot(general_data, aes(x=Admissions_Rate, y=Out_of_State_Tuition)) + 
   geom_point(aes(color=Ownership)) + 
   labs(x="Admissions Rate", y="Out-of-State Tuition", title="Out-of-State Tuition vs Admissions Rate for State Colleges") + 
   theme_minimal()
 plot3
+
 admissions_data2 <- admissions_data %>%
   mutate("Total_SAT"=(sumrow=SAT_Reading+SAT_Math), "Total_ACT"=(sumrow=ACT_English+ACT_Math))
+
 plot4 <- ggplot(admissions_data2, aes(x=Admissions_Rate, y=Total_SAT)) + 
   geom_point(aes(shape=Test_Requirements, color=Test_Requirements)) + 
   geom_smooth(method=lm) + labs(x="Admissions Rate", y="Total SAT for Reading/Math", title="Total SAT Score vs Admissions Rate for US Colleges") + 
   theme_minimal()
 plot4
+
 plot5 <- ggplot(admissions_data2, aes(x=Admissions_Rate, y=Total_ACT)) + 
   geom_point(aes(shape=Test_Requirements, color=Test_Requirements)) + 
   geom_smooth(method=lm) + 
   labs(x="Admissions Rate", y="Total ACT for English/Math", title="Total ACT Score vs Admissions Rate for US Colleges") + 
   theme_minimal()
 plot5
+
 plot6 <- ggplot(admissions_data2, aes(x=Total_SAT, y=Total_ACT)) + 
   geom_point(aes(shape=Test_Requirements, color=Test_Requirements)) + 
   geom_smooth(method=lm) + 
   labs(x="Total SAT for Reading/Math", y="Total ACT for English/Math", title="Total ACT Score vs Total SAT Score for US Colleges") + 
   theme_minimal()
 plot6
+
 plot7 <- ggplot(cost_data, aes(x=Ownership, y=In_State_Tuition)) + 
   geom_boxplot(fill="#112446") + 
   scale_y_continuous(trans="log10") + 
@@ -294,10 +316,12 @@ demo <- ggplot(demographic_data, aes(Ownership, Count)) +
     y="Total Enrollment",
     title="Undergraduate Students enrolled for each Ownership",
     subtitle=paste("State :", state, "; Locale :", locale)
+
   ) +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5),
         plot.subtitle = element_text(hjust = 0.5)) 
+
 demographic_data_ownership <- demographic_data %>% 
   filter(!(Ethnicity_Gender %in% c("Total_Men", "Total_Women")), !(Ownership %in% "Proprietary")) %>% 
   group_by(Ownership, Ethnicity_Gender) %>% 
@@ -316,10 +340,12 @@ demographic_o <- demographic_data_ownership %>%
     y="Total Student Count",
     title="Undergraduate Students enrolled for each Ownership by Ethnicity",
     subtitle=paste("State :", state, "; Locale :", locale)
+
   ) +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5),
         plot.subtitle = element_text(hjust = 0.5)) 
+
 demographic_data_gender <- demographic_data %>% 
   filter(Ethnicity_Gender %in% c("Total_Men", "Total_Women")) %>% 
   ggplot(aes(x=Ownership, y=Count, fill=Ethnicity_Gender)) +
@@ -382,6 +408,7 @@ outstate_earning <-  ggplot(earnings_data) +
   theme(plot.title=element_text(hjust=0.5),
         plot.subtitle=element_text(hjust=0.5)) 
 earnings <- grid.arrange(instate_earning, outstate_earning, ncol=2)
+
 return(list(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8, demo, demographic_o, demographic_data_gender, financial_pr, poverty_o, earnings))
 }
 ```
@@ -389,6 +416,7 @@ return(list(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8, demo, demogr
 
 # Main Function 
 Take the user input of:
+
 - state
 - ordering 
 - rows 
@@ -419,3 +447,5 @@ main <- function() {
 ```{r, warning=FALSE, include=TRUE, echo=TRUE}
 main()
 ```
+
+
