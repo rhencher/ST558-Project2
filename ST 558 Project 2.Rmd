@@ -24,12 +24,14 @@ knitr::opts_chunk$set(echo = TRUE)
 
 The goal for this project is to create a vignette about contacting an API using functions created to query, parse, and return well-structured data. Then, to use the functions to obtain data from the API and do some exploratory data analysis.  
 
-# Required packages  
+# Required Packages  
 
 `tidyverse`: a collection of R packages that are designed to work together to allow us to read in, transform, and visualize data  
 `httr`: allows us to use the `GET` function to access the API   
 `jsonlite`: allows us to access the `fromJSON` function to convert JSON data to a data frame  
-`ggplot2`: a package in the tidyverse that we will use for creating graphics
+`ggplot2`: a package in the tidyverse that we will use for creating graphics  
+`gridExtra`: allows us to arrange plots in a grid  
+`forcats`: TBD
 ```{r, message=FALSE}
 library(tidyverse)
 library(httr)
@@ -55,7 +57,6 @@ general_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", state="
   url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&school.state=", state, "&per_page=", n, "&sort=student.size:", size, "&_fields=school.name,school.ownership,", year, ".student.size,", year, ".admissions.admission_rate.overall,", year, ".cost.tuition.in_state,", year, ".cost.tuition.out_of_state")
 
   data <- GET(url)
-
   parsed_data <- fromJSON(rawToChar(data$content))
   
   parsed_data$results$school.ownership <- as.factor(parsed_data$results$school.ownership)
@@ -68,7 +69,6 @@ general_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", state="
 
 return(general_data)
 }
-
 general_info()
 ```
 
@@ -85,7 +85,6 @@ cost_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", state="NC"
   url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&school.state=", state, "&per_page=", n, "&sort=cost.tuition.in_state:", cost, "&_fields=school.name,school.ownership,", year, ".cost.tuition.in_state,", year, ".cost.tuition.out_of_state,", year, ".cost.booksupply,", year, ".cost.roomboard.oncampus,", year, ".cost.roomboard.offcampus")
 
   data <- GET(url)
-
   parsed_data <- fromJSON(rawToChar(data$content))
 
   cost_data <-
@@ -95,7 +94,7 @@ cost_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", state="NC"
   
     cost_data$Ownership <- as.factor(cost_data$Ownership)
       levels(cost_data$Ownership) <- c("Public", "Private, Nonprofit", "Proprietary")
-
+      
 return(cost_data)
 }
 
@@ -105,37 +104,32 @@ cost_info()
 ## `admissions_info()`  
 The following function returns admissions info on *n* colleges under a particular "ownership" category. The user should provide input for five arguments:  
 - `key` requests the user's personal key to access the API  
-- `ownership` requests whether the user would like to retrieve admissions info for "1" (public), "2" (private, nonprofit), or "3" (proprietary) colleges  
+- `ownership` requests whether the user would like to retrieve admissions info for "public", "private" (nonprofit), or "proprietary" colleges  
 - `rate` requests whether the user would like data on less competitive or more selective schools by selecting "desc" or "asc" respectively  
 - `n` is the number of records returned (1-100)  
 - `year` requests data from a particular year if the user desires data other than the latest available
 ```{r}
-admissions_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", ownership="private", rate="desc", n=50, year="latest")
+admissions_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", ownership="private", rate="asc", n=50, year="latest")
 {
-  ownership <- ifelse(tolower(ownership)=="public", 1, 
+  ownership <- ifelse(tolower(ownership)=="public", "1", 
                       ifelse(tolower(ownership)=="private", "2", 
                              ifelse(tolower(ownership)=="proprietary", "3", "ERROR"))) 
         
-  url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&school.ownership=", ownership, "&per_page=", n, "&sort=admissions.admission_rate.overall:", rate, "&school.degrees_awarded.predominant=3&_fields=school.name,school.ownership,", year, ".admissions.admission_rate.overall,", year, ".admissions.test_requirements,", year, ".admissions.sat_scores.midpoint.critical_reading,", year, ".admissions.sat_scores.midpoint.writing,", year, ".admissions.sat_scores.midpoint.math,", year, ".admissions.act_scores.midpoint.english,", year, ".admissions.act_scores.midpoint.writing,", year, ".admissions.act_scores.midpoint.math")
+  url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&school.ownership=", ownership, "&per_page=", n, "&sort=admissions.admission_rate.overall:", rate, "&school.degrees_awarded.predominant=3&_fields=school.name,", year, ".admissions.admission_rate.overall,", year, ".admissions.test_requirements,", year, ".admissions.sat_scores.midpoint.critical_reading,", year, ".admissions.sat_scores.midpoint.writing,", year, ".admissions.sat_scores.midpoint.math,", year, ".admissions.act_scores.midpoint.english,", year, ".admissions.act_scores.midpoint.writing,", year, ".admissions.act_scores.midpoint.math")
 
   data <- GET(url)
-
   parsed_data <- fromJSON(rawToChar(data$content))
   
   admissions_data <-
     parsed_data$results %>%
     as_tibble() %>%
     select("Name"=ends_with("name"), "Ownership"=ends_with("ownership"), "Admissions_Rate"=ends_with("overall"), "Test_Requirements"=ends_with("requirements"), "SAT_Reading"=ends_with("reading"), "SAT_Writing"=ends_with("sat_scores.midpoint.writing"), "SAT_Math"=ends_with("sat_scores.midpoint.math"), "ACT_English"=ends_with("english"), "ACT_Writing"=ends_with("act_scores.midpoint.writing"), "ACT_Math"=ends_with("act_scores.midpoint.math"))
-  
-    admissions_data$Ownership <- as.factor(admissions_data$Ownership)
-      levels(admissions_data$Ownership) <- c("Public", "Private, Nonprofit", "Proprietary")
     
     admissions_data$Test_Requirements <- as.factor(admissions_data$Test_Requirements)
       levels(admissions_data$Test_Requirements) <- c("Required", "Recommended", "Neither required nor recommended", "Do not know", "Considered but not required")
   
 return(admissions_data)
 }
-
 admissions_info()
 ```
 
@@ -155,47 +149,43 @@ demographic_info <- function(key="k42psBgICW3DEe6eS1gc7AxbTTYtOwOGN9URGVuT", sta
                                    ifelse(locale=="rural", "41,42,43", "ERROR"))))
   
     url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&school.state=", state, "&school.locale=", location, "&per_page=", n, "&sort=student.size:", size, "&_fields=school.name,school.ownership,school.city,", year, ".student.size,", year, ".student.demographics.race_ethnicity.aian,", year, ".student.demographics.race_ethnicity.nhpi,", year, ".student.demographics.race_ethnicity.asian,", year, ".student.demographics.race_ethnicity.black,", year, ".student.demographics.race_ethnicity.white,", year, ".student.demographics.race_ethnicity.hispanic,", year, ".student.demographics.race_ethnicity.unknown,", year, ".student.demographics.men,", year, ".student.demographics.women")
-
   
-  # url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&per_page=", n, "&school.state=", state, "&school.locale=", location, "&sort=student.size:", size)
-
   data <- GET(url)
-
   parsed_data <- fromJSON(rawToChar(data$content))
   
   demographic_data <-
     parsed_data$results %>%
     as_tibble() %>%
-    select("name" = ends_with("name"),
-           "city" = ends_with("city"),
-           "ownership" = ends_with("ownership"),
-           "total_enrollment" = ends_with("size"),
-           "aian" = ends_with("aian"),
-           "nhpi" = ends_with("nhpi"),
-           "asian" = ends_with("asian"),
-           "black" = ends_with("black"),
-           "white" = ends_with("white"),
-           "hispanic" = ends_with("hispanic"),
-           "unknown" = ends_with("unknown"),
-           "men" = ends_with("men"),
-           "women" = ends_with("women")
+    select("Name"=ends_with("name"),
+           "City"=ends_with("city"),
+           "Ownership"=ends_with("ownership"),
+           "Total_Enrollment"=ends_with("size"),
+           "AIAN"=ends_with("aian"),
+           "NHPI"=ends_with("nhpi"),
+           "Asian"=ends_with("asian"),
+           "Black"=ends_with("black"),
+           "White"=ends_with("white"),
+           "Hispanic"=ends_with("hispanic"),
+           "Unknown"=ends_with("unknown"),
+           "Men"=ends_with("men"),
+           "Women"=ends_with("women")
            )
   
-  demographic_data$ownership <- as.factor(demographic_data$ownership)
-        levels(demographic_data$ownership) <- c("Public", "Private, Nonprofit", "Proprietary")
+  demographic_data$Ownership <- as.factor(demographic_data$Ownership)
+        levels(demographic_data$Ownership) <- c("Public", "Private, Nonprofit", "Proprietary")
   
   demographic_data <- demographic_data %>% 
-    mutate(total_aian = round(total_enrollment*aian), 
-           total_nhpi = round(total_enrollment*nhpi), 
-           total_asian = round(total_enrollment*asian), 
-           total_black = round(total_enrollment*black),
-           total_white = round(total_enrollment*white), 
-           total_hispanic = round(total_enrollment*hispanic),
-           total_unknown = round(total_enrollment*unknown),
-           total_men = round(total_enrollment*men1),
-           total_women = round(total_enrollment*women)) %>% 
-    select(name, city, ownership, starts_with("total_")) %>% 
-    pivot_longer(cols = !c(name, city, ownership), names_to = "ethnicity_gender", values_to = "count") 
+    mutate(Total_AIAN=round(Total_Enrollment*AIAN), 
+           Total_NHPI=round(Total_Enrollment*NHPI), 
+           Total_Asian=round(Total_Enrollment*Asian), 
+           Total_Black=round(Total_Enrollment*Black),
+           Total_White=round(Total_Enrollment*White), 
+           Total_Hispanic=round(Total_Enrollment*Hispanic),
+           Total_Unknown=round(Total_Enrollment*Unknown),
+           Total_Men=round(Total_Enrollment*Men1),
+           Total_Women=round(Total_Enrollment*Women)) %>% 
+    select(Name, City, Ownership, starts_with("Total_")) %>% 
+    pivot_longer(cols=!c(Name, City, Ownership), names_to="Ethnicity_Gender", values_to="Count") 
   
 return(demographic_data)
 }
@@ -216,16 +206,16 @@ financial_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", state
   url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&school.state=", state, "&per_page=", n, "&sort=student.size:", size, "&_fields=school.name,school.ownership,school.city,", year, ".student.size,", year, ".student.demographics.poverty_rate,", year, ".student.demographics.median_family_income,", year, ".aid.median_debt.female_students,", year, ".aid.median_debt.male_students")
 
   data <- GET(url)
-
   parsed_data <- fromJSON(rawToChar(data$content))
   
   financial_data <- 
     parsed_data$results %>%
     as_tibble() %>%
-    select("name"=ends_with("name"), "ownership"=ends_with("ownership"), "city"=ends_with("city"), "size"=ends_with("size"), "poverty_rate"=ends_with("poverty_rate"), "median_family_income"=ends_with("income"), "female_fedian_febt"=ends_with("female_students"), "male_median_debt"=ends_with("debt.male_students"))
+
+    select("Name"=ends_with("name"), "Ownership"=ends_with("ownership"), "City"=ends_with("city"), "Size"=ends_with("size"), "Poverty_Rate"=ends_with("poverty_rate"), "Median_Family_Income"=ends_with("income"), "Female_Median_Debt"=ends_with("female_students"), "Male_Median_Debt"=ends_with("debt.male_students"))
   
-    financial_data$ownership <- as.factor(financial_data$ownership)
-      levels(financial_data$ownership) <- c("Public", "Private, Nonprofit", "Proprietary")
+    financial_data$Ownership <- as.factor(financial_data$Ownership)
+      levels(financial_data$Ownership) <- c("Public", "Private, Nonprofit", "Proprietary")
 
 return(financial_data)
 }
@@ -246,7 +236,6 @@ earnings_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", earnin
   url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&per_page=", n, "&sort=earnings.10_yrs_after_entry.median:", earnings, "&school.degrees_awarded.predominant=3&_fields=school.name,", year, ".cost.tuition.in_state,", year, ".cost.tuition.out_of_state,", year, ".earnings.10_yrs_after_entry.median,", year, ".earnings.10_yrs_after_entry.mean_earnings.female_students,", year, ".earnings.10_yrs_after_entry.mean_earnings.male_students")
 
   data <- GET(url)
-
   parsed_data <- fromJSON(rawToChar(data$content))
 
   earnings_data <-
@@ -256,13 +245,11 @@ earnings_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", earnin
 
 return(earnings_data)
 }
-
 earnings_info()
 ```
 
 # Data Exploration
 ```{r, warning=FALSE, include=TRUE, echo=TRUE}
-
 exploration <- function(general_data, cost_data, admissions_data, demographic_data, financial_data, earnings_data, state, locale) {
 
 summary(general_data)
@@ -308,134 +295,118 @@ plot6 <- ggplot(admissions_data2, aes(x=Total_SAT, y=Total_ACT)) +
   theme_minimal()
 plot6
 
-table(admissions_data$Ownership, admissions_data$Test_Requirements)
-
-
-plot7 <- ggplot(costs_data, aes(x=Ownership, y=In_State_Tuition)) + 
-  geom_boxplot(fill = "#112446") + 
+plot7 <- ggplot(cost_data, aes(x=Ownership, y=In_State_Tuition)) + 
+  geom_boxplot(fill="#112446") + 
   scale_y_continuous(trans="log10") + 
   geom_jitter() +
-  labs(y ="In-State Tuition", title="In-State Tuition by Ownership Type for State Colleges") + 
+  labs(y="In-State Tuition", title="In-State Tuition by Ownership Type for State Colleges") + 
   theme_minimal()
 plot7
-
-plot8 <- ggplot(costs_data, aes(x=Ownership, y=Out_of_State_Tuition)) + 
-  geom_boxplot(fill = "#112446") + 
+plot8 <- ggplot(cost_data, aes(x=Ownership, y=Out_of_State_Tuition)) + 
+  geom_boxplot(fill="#112446") + 
   scale_y_continuous(trans="log10") + 
   geom_jitter() +
-  labs(y ="Out-of-State Tuition", title="Out-of-State Tuition by Ownership Type for State Colleges") + 
+  labs(y="Out-of-State Tuition", title="Out-of-State Tuition by Ownership Type for State Colleges") + 
   theme_minimal()
 plot8
-
-demo <- ggplot(demographic_data, aes(ownership, count)) +
+demo <- ggplot(demographic_data, aes(Ownership, Count)) +
   geom_col(fill = "#112446") +
   labs(
-    x = "Ownership ",
-    y = "Total Enrollment",
-    title = "Undergraduate Students enrolled for each Ownership",
-    subtitle = paste("State :", state, "; Locale :", locale)
+    x="Ownership ",
+    y="Total Enrollment",
+    title="Undergraduate Students enrolled for each Ownership",
+    subtitle=paste("State :", state, "; Locale :", locale)
+
   ) +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5),
         plot.subtitle = element_text(hjust = 0.5)) 
 
-
 demographic_data_ownership <- demographic_data %>% 
-  filter(!(ethnicity_gender %in% c("total_men", "total_women")), !(ownership %in% "Proprietary")) %>% 
-  group_by(ownership, ethnicity_gender) %>% 
-  summarise(total_count = sum(count)) %>% 
-  arrange(total_count, .by_group = TRUE)
-
-demographic_data_ownership$ethnicity_gender < factor(demographic_data_ownership$ethnicity_gender, levels=demographic_data_ownership[order(demographic_data_ownership$ethnicity_gender), "total_count"])
-
+  filter(!(Ethnicity_Gender %in% c("Total_Men", "Total_Women")), !(Ownership %in% "Proprietary")) %>% 
+  group_by(Ownership, Ethnicity_Gender) %>% 
+  summarise(Total_Count=sum(Count)) %>% 
+  arrange(Total_Count, .by_group = TRUE)
+demographic_data_ownership$Ethnicity_Gender < factor(demographic_data_ownership$Ethnicity_Gender, levels=demographic_data_ownership[order(demographic_data_ownership$Ethnicity_Gender), "Total_Count"])
 demographic_data_ownership
-
 demographic_o <- demographic_data_ownership %>% 
-  filter(!(ethnicity_gender %in% "total_enrollment")) %>%
-  arrange(ethnicity_gender) %>% 
-  ggplot(aes(x=ownership, y = total_count, fill = ethnicity_gender)) +
-  geom_bar(position=position_dodge2(reverse = TRUE), stat='identity') +
-  scale_fill_hue(direction = 1) +
+  filter(!(Ethnicity_Gender %in% "Total_Enrollment")) %>%
+  arrange(Ethnicity_Gender) %>% 
+  ggplot(aes(x=Ownership, y=Total_Count, fill=Ethnicity_Gender)) +
+  geom_bar(position=position_dodge2(reverse=TRUE), stat='identity') +
+  scale_fill_hue(direction=1) +
   labs(
-    x = "Ownership",
-    y = "Total Student Count",
-    title = "Undergraduate Students enrolled for each Ownership by Ethnicity",
-    subtitle = paste("State :", state, "; Locale :", locale)
+    x="Ownership",
+    y="Total Student Count",
+    title="Undergraduate Students enrolled for each Ownership by Ethnicity",
+    subtitle=paste("State :", state, "; Locale :", locale)
+
   ) +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5),
         plot.subtitle = element_text(hjust = 0.5)) 
 
 demographic_data_gender <- demographic_data %>% 
-  filter(ethnicity_gender %in% c("total_men", "total_women")) %>% 
-  ggplot(aes(x=ownership, y=count, fill=ethnicity_gender)) +
+  filter(Ethnicity_Gender %in% c("Total_Men", "Total_Women")) %>% 
+  ggplot(aes(x=Ownership, y=Count, fill=Ethnicity_Gender)) +
   geom_boxplot() +
   scale_y_continuous(trans="log10") +
   labs(
-    x = "Ownership",
-    y = "Count",
-    title = "Count of Students for each Ownership by Gender",
-    subtitle = paste("State :", state, "; Locale :", locale)
+    x="Ownership",
+    y="Count",
+    title="Count of Students for each Ownership by Gender",
+    subtitle=paste("State :", state, "; Locale :", locale)
   ) + 
   theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5),
-        plot.subtitle = element_text(hjust = 0.5)) 
+  theme(plot.title=element_text(hjust=0.5),
+        plot.subtitle=element_text(hjust=0.5)) 
   
-
 financial_data_pr <- financial_data %>% 
-  group_by(ownership, city) %>% 
-  summarise(median_poverty_rate = median(poverty_rate, na.rm = TRUE))
-
+  group_by(Ownership, City) %>% 
+  summarise(Median_Poverty_Rate=median(Poverty_Rate, na.rm=TRUE))
 financial_data_pr
-
 financial_pr <- financial_data_pr %>%
-  filter(!is.na(median_poverty_rate)) %>%
+  filter(!is.na(Median_Poverty_Rate)) %>%
   ggplot() +
-  aes(x = median_poverty_rate, y= ..density..) +
-  geom_histogram(bins = 14L, fill = "#112446") +
-  geom_density(color = "red", 
-               size = 2) +
+  aes(x=Median_Poverty_Rate, y=..density..) +
+  geom_histogram(bins=14L, fill="#112446") +
+  geom_density(color="red", 
+               size=2) +
   labs(
-    x = "Poverty Rate",
-    title = "Poverty Rate Distribution by State"
+    x="Poverty Rate",
+    title="Poverty Rate Distribution by State"
   ) +
   theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5),
-        plot.subtitle = element_text(hjust = 0.5)) 
-
+  theme(plot.title=element_text(hjust = 0.5),
+        plot.subtitle=element_text(hjust = 0.5)) 
 poverty_ownership <- financial_data %>% 
-  group_by(ownership) %>% 
-  summarise(mean_pr = mean(poverty_rate, na.rm=TRUE)) %>% 
-  filter(!(ownership %in% "Proprietary"))
-
+  group_by(Ownership) %>% 
+  summarise(Mean_PR = mean(Poverty_Rate, na.rm=TRUE)) %>% 
+  filter(!(Ownership %in% "Proprietary"))
 poverty_o <- ggplot(poverty_ownership) +
-  aes(x = ownership, y = mean_pr) +
-  geom_col(fill = "#112446") +
+  aes(x=Ownership, y=Mean_PR) +
+  geom_col(fill="#112446") +
   labs(
-    x = "Poverty Rate",
-    title = "Poverty Rate by Ownership for Each State"
+    x="Poverty Rate",
+    title="Poverty Rate by Ownership for Each State"
   ) +
   theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5),
-        plot.subtitle = element_text(hjust = 0.5)) 
-
-
+  theme(plot.title=element_text(hjust = 0.5),
+        plot.subtitle=element_text(hjust = 0.5)) 
 instate_earning <- ggplot(earnings_data) +
-  aes(x = In_State_Tuition, y = Median_Earnings) +
-  geom_point(shape = "circle", size = 2, colour = "#112446") +
-  geom_smooth(span = 0.75) +
+  aes(x=In_State_Tuition, y=Median_Earnings) +
+  geom_point(shape="circle", size=2, colour="#112446") +
+  geom_smooth(span=0.75) +
   theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5),
-        plot.subtitle = element_text(hjust = 0.5)) 
-
+  theme(plot.title=element_text(hjust=0.5),
+        plot.subtitle=element_text(hjust=0.5)) 
 outstate_earning <-  ggplot(earnings_data) +
-  aes(x = Out_of_State_Tuition, y = Median_Earnings) +
-  geom_point(shape = "circle", size = 2, colour = "#112446") +
-  geom_smooth(span = 0.75) +
+  aes(x=Out_of_State_Tuition, y=Median_Earnings) +
+  geom_point(shape="circle", size=2, colour="#112446") +
+  geom_smooth(span=0.75) +
   theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5),
-        plot.subtitle = element_text(hjust = 0.5)) 
-
+  theme(plot.title=element_text(hjust=0.5),
+        plot.subtitle=element_text(hjust=0.5)) 
 earnings <- grid.arrange(instate_earning, outstate_earning, ncol=2)
 
 return(list(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8, demo, demographic_o, demographic_data_gender, financial_pr, poverty_o, earnings))
@@ -443,8 +414,9 @@ return(list(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8, demo, demogr
 ```
 
 
-# Main function 
-Take the user input of :
+# Main Function 
+Take the user input of:
+
 - state
 - ordering 
 - rows 
