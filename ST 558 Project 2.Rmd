@@ -1,21 +1,21 @@
 ---
 title: "Project 2"
 author: "Rachel Hencher"
-date: "2022-09-26"
-output: 
+date: '2022-09-26'
+output:
   html_document:
-    toc: true
-    toc_float: true
+    toc: yes
+    toc_float: yes
     theme: cerulean
     highlight: pygments
 params:
-  key: "D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr"
-  state: "NC"
-  ordering: "desc"
+  key: D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr
+  state: NC
+  ordering: desc
   rows: 100
-  year: "latest"
-  ownership: "private"
-  locale: "town"
+  year: latest
+  ownership: private
+  locale: town
 ---
 
 ```{r setup, include=FALSE}
@@ -294,84 +294,66 @@ earnings_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", earnin
 ```{r, warning=FALSE, include=TRUE, echo=TRUE}
 exploration <- function(general_data, cost_data, admissions_data, demographic_data, financial_data, earnings_data, state, locale) {
 
-summary(general_data)
+general_summary <- summary(general_data)
   
-plot1 <- ggplot(general_data, aes(x=Ownership, y=Size)) + 
+size_by_ownership <- ggplot(general_data, aes(x=Ownership, y=Size)) + 
   geom_boxplot(fill = "#112446") + 
   labs(title="Size by Ownership Type for State Colleges") + 
   theme_minimal()
-plot1
 
-plot2 <- ggplot(general_data, aes(x=Admissions_Rate, y=In_State_Tuition)) + 
+instate_vs_adm <- ggplot(general_data, aes(x=Admissions_Rate, y=In_State_Tuition)) + 
   geom_point(aes(color=Ownership)) + 
   labs(x="Admissions Rate", y="In-State Tuition", title="In-State Tuition vs Admissions Rate for State Colleges") + 
   theme_minimal()
-plot2
 
-plot3 <- ggplot(general_data, aes(x=Admissions_Rate, y=Out_of_State_Tuition)) + 
+outstate_vs_adm <- ggplot(general_data, aes(x=Admissions_Rate, y=Out_of_State_Tuition)) + 
   geom_point(aes(color=Ownership)) + 
   labs(x="Admissions Rate", y="Out-of-State Tuition", title="Out-of-State Tuition vs Admissions Rate for State Colleges") + 
   theme_minimal()
-plot3
 
 admissions_data2 <- admissions_data %>%
   mutate("Total_SAT"=(sumrow=SAT_Reading+SAT_Math), "Total_ACT"=(sumrow=ACT_English+ACT_Math))
 
-plot4 <- ggplot(admissions_data2, aes(x=Admissions_Rate, y=Total_SAT)) + 
+sat_vs_adm <- ggplot(admissions_data2, aes(x=Admissions_Rate, y=Total_SAT)) + 
   geom_point(aes(shape=Test_Requirements, color=Test_Requirements)) + 
   geom_smooth(method=lm) + labs(x="Admissions Rate", y="Total SAT for Reading/Math", title="Total SAT Score vs Admissions Rate for US Colleges") + 
   theme_minimal()
-plot4
 
-plot5 <- ggplot(admissions_data2, aes(x=Admissions_Rate, y=Total_ACT)) + 
+act_vs_adm <- ggplot(admissions_data2, aes(x=Admissions_Rate, y=Total_ACT)) + 
   geom_point(aes(shape=Test_Requirements, color=Test_Requirements)) + 
   geom_smooth(method=lm) + 
   labs(x="Admissions Rate", y="Total ACT for English/Math", title="Total ACT Score vs Admissions Rate for US Colleges") + 
   theme_minimal()
-plot5
 
-plot6 <- ggplot(admissions_data2, aes(x=Total_SAT, y=Total_ACT)) + 
+act_vs_sat <- ggplot(admissions_data2, aes(x=Total_SAT, y=Total_ACT)) + 
   geom_point(aes(shape=Test_Requirements, color=Test_Requirements)) + 
   geom_smooth(method=lm) + 
   labs(x="Total SAT for Reading/Math", y="Total ACT for English/Math", title="Total ACT Score vs Total SAT Score for US Colleges") + 
   theme_minimal()
-plot6
 
-plot7 <- ggplot(cost_data, aes(x=Ownership, y=In_State_Tuition)) + 
+instate_by_ownership <- ggplot(cost_data, aes(x=Ownership, y=In_State_Tuition)) + 
   geom_boxplot(fill="#112446") + 
   scale_y_continuous(trans="log10") + 
   geom_jitter() +
   labs(y="In-State Tuition", title="In-State Tuition by Ownership Type for State Colleges") + 
   theme_minimal()
-plot7
-plot8 <- ggplot(cost_data, aes(x=Ownership, y=Out_of_State_Tuition)) + 
+
+outstate_by_ownership <- ggplot(cost_data, aes(x=Ownership, y=Out_of_State_Tuition)) + 
   geom_boxplot(fill="#112446") + 
   scale_y_continuous(trans="log10") + 
   geom_jitter() +
   labs(y="Out-of-State Tuition", title="Out-of-State Tuition by Ownership Type for State Colleges") + 
   theme_minimal()
-plot8
-demo <- ggplot(demographic_data, aes(Ownership, Count)) +
-  geom_col(fill = "#112446") +
-  labs(
-    x="Ownership ",
-    y="Total Enrollment",
-    title="Undergraduate Students enrolled for each Ownership",
-    subtitle=paste("State :", state, "; Locale :", locale)
 
-  ) +
-  theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5),
-        plot.subtitle = element_text(hjust = 0.5)) 
 
-demographic_data_ownership <- demographic_data %>% 
+demographic_data_race <- demographic_data %>% 
   filter(!(Ethnicity_Gender %in% c("Total_Men", "Total_Women")), !(Ownership %in% "Proprietary")) %>% 
   group_by(Ownership, Ethnicity_Gender) %>% 
   summarise(Total_Count=sum(Count)) %>% 
   arrange(Total_Count, .by_group = TRUE)
-demographic_data_ownership$Ethnicity_Gender < factor(demographic_data_ownership$Ethnicity_Gender, levels=demographic_data_ownership[order(demographic_data_ownership$Ethnicity_Gender), "Total_Count"])
-demographic_data_ownership
-demographic_o <- demographic_data_ownership %>% 
+
+
+demographic_ownership <- demographic_data_race %>% 
   filter(!(Ethnicity_Gender %in% "Total_Enrollment")) %>%
   arrange(Ethnicity_Gender) %>% 
   ggplot(aes(x=Ownership, y=Total_Count, fill=Ethnicity_Gender)) +
@@ -403,15 +385,14 @@ demographic_data_gender <- demographic_data %>%
   theme(plot.title=element_text(hjust=0.5),
         plot.subtitle=element_text(hjust=0.5)) 
   
-financial_data_pr <- financial_data %>% 
+
+financial_poverty_rate <- financial_data %>% 
   group_by(Ownership, City) %>% 
-  summarise(Median_Poverty_Rate=median(Poverty_Rate, na.rm=TRUE))
-financial_data_pr
-financial_pr <- financial_data_pr %>%
+  summarise(Median_Poverty_Rate=median(Poverty_Rate, na.rm=TRUE)) %>%
   filter(!is.na(Median_Poverty_Rate)) %>%
   ggplot() +
   aes(x=Median_Poverty_Rate, y=..density..) +
-  geom_histogram(bins=14L, fill="#112446") +
+  geom_histogram(bins=6L, fill="#112446") +
   geom_density(color="red", 
                size=2) +
   labs(
@@ -421,11 +402,12 @@ financial_pr <- financial_data_pr %>%
   theme_minimal() +
   theme(plot.title=element_text(hjust = 0.5),
         plot.subtitle=element_text(hjust = 0.5)) 
-poverty_ownership <- financial_data %>% 
+
+poverty_rate_by_ownership <- financial_data %>% 
   group_by(Ownership) %>% 
   summarise(Mean_PR = mean(Poverty_Rate, na.rm=TRUE)) %>% 
-  filter(!(Ownership %in% "Proprietary"))
-poverty_o <- ggplot(poverty_ownership) +
+  filter(!(Ownership %in% "Proprietary")) %>% 
+  ggplot() +
   aes(x=Ownership, y=Mean_PR) +
   geom_col(fill="#112446") +
   labs(
@@ -435,6 +417,7 @@ poverty_o <- ggplot(poverty_ownership) +
   theme_minimal() +
   theme(plot.title=element_text(hjust = 0.5),
         plot.subtitle=element_text(hjust = 0.5)) 
+
 instate_earning <- ggplot(earnings_data) +
   aes(x=In_State_Tuition, y=Median_Earnings) +
   geom_point(shape="circle", size=2, colour="#112446") +
@@ -442,6 +425,7 @@ instate_earning <- ggplot(earnings_data) +
   theme_minimal() +
   theme(plot.title=element_text(hjust=0.5),
         plot.subtitle=element_text(hjust=0.5)) 
+
 outstate_earning <-  ggplot(earnings_data) +
   aes(x=Out_of_State_Tuition, y=Median_Earnings) +
   geom_point(shape="circle", size=2, colour="#112446") +
@@ -449,21 +433,22 @@ outstate_earning <-  ggplot(earnings_data) +
   theme_minimal() +
   theme(plot.title=element_text(hjust=0.5),
         plot.subtitle=element_text(hjust=0.5)) 
-earnings <- grid.arrange(instate_earning, outstate_earning, ncol=2)
 
-return(list(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8, demo, demographic_o, demographic_data_gender, financial_pr, poverty_o, earnings))
+return(list(general_summary, size_by_ownership, instate_vs_adm, outstate_vs_adm, sat_vs_adm, act_vs_adm, act_vs_sat, instate_by_ownership, outstate_by_ownership, demographic_data_race, demographic_ownership, demographic_data_gender, financial_poverty_rate, poverty_rate_by_ownership, instate_earning, outstate_earning))
 }
 ```
 
 
 # Main Function 
 Take the user input of:  
+
 - state
 - ordering 
 - rows 
 - year 
 - ownership 
 - locale
+
 ```{r, warning=FALSE, include=TRUE, echo=TRUE}
 main <- function() {
   key = params$key
@@ -485,7 +470,17 @@ main <- function() {
 *The function created above allows the user to provide input for the set of parameters just one time at the very top of the code and then applies those choices to all of the previous functions discussed. For instance, this makes it easy for a user who is interested in staying in a particular state to research varying topics on colleges just in the state of interest. It also makes it easy to pull data for a specific year without having to type it as an argument into each separate function.*  
 
 ```{r, warning=FALSE, include=TRUE, echo=TRUE}
-main()
+result_list <- main()
+for( i in 1:length(result_list)){
+  if(i == length(result_list)){
+    outstate_earning = result_list[[i]]
+  }
+  else if(i == (length(result_list)-1)){
+    instate_earning = result_list[[i]]
+  }
+  else{
+  print(result_list[[i]])
+  }
+}
+grid.arrange(instate_earning, outstate_earning, ncol=2)
 ```
-
-
