@@ -3,11 +3,9 @@ title: "College Scorecard API"
 author: "Rachel Hencher & Sneha Karanjai"
 date: '2022-09-26'
 output:
-  html_document:
-    toc: yes
-    toc_float: yes
-    theme: cerulean
-    highlight: pygments
+  github_document:
+    toc: true
+    toc_depth: 2
 params:
   key: D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr
   state: NC
