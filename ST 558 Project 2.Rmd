@@ -19,7 +19,7 @@ params:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning=FALSE, message=FALSE, include=TRUE, echo=TRUE)
 ```
 
 The goal for this project is to create a vignette about contacting an API using functions created to query, parse, and return well-structured data. Then, to use the functions to obtain data from the API and do some exploratory data analysis.  
@@ -38,7 +38,7 @@ We must first install the necessary packages to contact our API and to then crea
 `gridExtra`: allows us to arrange plots in a grid  
 `forcats`: TBD  
 `stingr`: allows us to manipulate individual characters within strings
-```{r packages, message=FALSE}
+```{r packages}
 library(tidyverse)
 library(httr)
 library(jsonlite)
@@ -292,8 +292,12 @@ earnings_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", earnin
 ```
 *In order to create this final function above, we again start by setting up our arguments to allow the user to return a more customized set of data. Defaults were set to our personal access key for the College Scorecard API, descending results by earnings 10 years after entry, 50 entries to be returned, and the latest information available through the API. We again utilized the `paste0` function in order to incorporate these arguments into the URL call. The `GET` function allows us to again call the URL and the `fromJSON` function allows us to read the JSON-formatted content into R. We then saved just the "results" portion of our data, excluding the metadata information, as a tibble using the `as_tibble` function and used `select` to order and rename the variables. `ends_with` is once again utilized to rename the variables more efficiently. This new tibble is then, once again, designated as our object to be returned for this function.*  
 
+
+
 # Data Exploration
-```{r data_exploration, warning=FALSE, message=FALSE, include=TRUE, echo=TRUE}
+Now that we have the functions set up to extract data using the user inputs, it is time we explore the data and build on a narrative. The below function is a compilation of all the exploration that is done on each of the dataset. 
+
+```{r data_exploration}
 exploration <- function(general_data, cost_data, admissions_data, demographic_data, financial_data, earnings_data, state, locale) {
 
 # First 5 rows of data generated within the general_info function
@@ -455,7 +459,11 @@ outstate_earning <-  ggplot(earnings_data) +
 return(list(general_df, general_summary, size_by_ownership, instate_vs_adm, outstate_vs_adm, admissions_df, sat_vs_adm, act_vs_adm, act_vs_sat, cost_df, instate_by_ownership, outstate_by_ownership, demographic_df, demographic_data_race, demographic_ownership, demographic_data_gender, financial_df, financial_poverty_rate, poverty_rate_by_ownership, earnings_df, instate_earning, outstate_earning))
 }
 ```
-*For each of the graphics above, we begin with the `ggplot` function to create a coordinate system from which we can then build. We next add a "geom_function" such as `geom_bar`, `geom_point`, or `geom_smooth` in order to add the specified layer to our coordinate system. ADD HERE FOR DETAILS. We next use `labs` in order to add more informative and descriptive plot titles, axis labels, and key titles. THEME*
+*We start by exploring the general information data. This dataset is a compilation of the Tuition and Admission Details of schools in a particular state. Since the general data table consists of a substantial number of numeric columns, we draw summary statistics for these numerical columns. We then have a boxplot to see the measure of spread of the number of students for the colleges in the state separated by ownership. To understand if there is a correlation between tuition and the admission rate, we have a scatter plot for both in-state and out-of-state tuition by admission rate coded by ownership. We then analyze the admissions data consisting of the admissions rate and test details for schools in a particular state. We visualize the total SAT and ACT scores vs Admission Rates coded by Test Requirements to see if the total scores have a positive correlation with admission rate for schools. We also check if a higher ACT score implies a higher SAT score. We then move on to understand the cost perspective of these schools and understand if the ownership of schools affects the different tuition costs. We see the variability of in-state and out-of-state tuition costs by ownership.*
+
+*Now that we have covered the different aspects of the schools, it would be pertinent to see the student information in these schools. We start by understanding the student diversity. We explore a school's diversity by understanding the number of students in each ethnicity and gender. We group ethnicities by the school's ownership and sum up the total count to see the dominant ethnicity of students in each ownership. We then see the total number of men and women in each ownership. Moving on to the financial backgrounds of students enrolled in these schools, we explore the financial data. We plot the distribution of poverty rates for the particular state and see the mean poverty rate of schools in each ownership. Finally, we were inquisitive to know the prospective outcome of the students graduating from these schools to see how much they spent vs how much they earned after graduating. For this, we have a scatter plot for the median earnings of students.*
+
+*For each of the graphics above, we begin with the `ggplot` function to create a coordinate system from which we can then build. We next add a "geom_function" such as `geom_bar`, `geom_point`, or `geom_smooth` in order to add the specified layer to our coordinate system. We next use `labs` in order to add more informative and descriptive plot titles, axis labels, and key titles. To maintain consistency we have used `theme_minimal()` across all plots. It is important to note that not every plot could have been created with the data generated by the API. We ran transformations, grouping, and adding new variables from the existing variables to get the desired plots.*
 
 
 # Main Function  
@@ -469,7 +477,7 @@ Take the user input of:
 - ownership 
 - locale
 
-```{r main_function, warning=FALSE, include=TRUE, echo=TRUE}
+```{r main_function}
 main <- function() {
   key = params$key
   state = params$state
@@ -489,7 +497,7 @@ main <- function() {
 ```
 *The function created above allows the user to provide input for the set of parameters just one time at the very top of the code and then applies those choices to all of the previous functions discussed. For instance, this makes it easy for a user who is interested in staying in a particular state to research varying topics on colleges just in the state of interest. It also makes it easy to pull data for a specific year without having to type it as an argument into each separate function.*  
 
-```{r, warning=FALSE, message=FALSE, include=TRUE, echo=TRUE}
+```{r}
 result_list <- main()
 for( i in 1:length(result_list)){
   if(i == length(result_list)){
