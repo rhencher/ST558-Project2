@@ -178,7 +178,7 @@ demographic_info <- function(key="k42psBgICW3DEe6eS1gc7AxbTTYtOwOGN9URGVuT", sta
                             ifelse(locale=="town", "31,32,33",
                                    ifelse(locale=="rural", "41,42,43", "ERROR"))))  
   
-    url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&school.state=", state, "&school.locale=", location, "&per_page=", n, "&sort=student.size:", size, "&_fields=school.name,school.ownership,school.city,", year, ".student.size,", year, ".student.demographics.race_ethnicity.aian,", year, ".student.demographics.race_ethnicity.nhpi,", year, ".student.demographics.race_ethnicity.asian,", year, ".student.demographics.race_ethnicity.black,", year, ".student.demographics.race_ethnicity.white,", year, ".student.demographics.race_ethnicity.hispanic,", year, ".student.demographics.race_ethnicity.unknown,", year, ".student.demographics.men,", year, ".student.demographics.women")  
+  url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&school.state=", state, "&school.locale=", location, "&per_page=", n, "&sort=student.size:", size, "&_fields=school.name,school.ownership,school.city,", year, ".student.size,", year, ".student.demographics.race_ethnicity.aian,", year, ".student.demographics.race_ethnicity.nhpi,", year, ".student.demographics.race_ethnicity.asian,", year, ".student.demographics.race_ethnicity.black,", year, ".student.demographics.race_ethnicity.white,", year, ".student.demographics.race_ethnicity.hispanic,", year, ".student.demographics.race_ethnicity.unknown,", year, ".student.demographics.men,", year, ".student.demographics.women")  
   
   data <- GET(url)  
   
@@ -355,26 +355,26 @@ outstate_by_ownership <- ggplot(cost_data, aes(x=Ownership, y=Out_of_State_Tuiti
   labs(y="Out-of-State Tuition", title="Out-of-State Tuition by Ownership Type for State Colleges") + 
   theme_minimal()  
 
-# SNEHA TO ADD
+# Data table for Total Count of Gender/Ethnicity by Ownership
 demographic_data_race <- demographic_data %>% 
   filter(!(Ethnicity_Gender %in% c("Total_Men", "Total_Women")), !(Ownership %in% "Proprietary")) %>% 
   group_by(Ownership, Ethnicity_Gender) %>% 
   summarise(Total_Count=sum(Count)) %>% 
-  arrange(Total_Count, .by_group = TRUE)  
+  arrange(Total_Count, .by_group=TRUE)  
 
-# SNEHA TO ADD
+# Barchart of Total Student Count by Ownership broken down by demographic for data generated within the demographic_info function
 demographic_ownership <- demographic_data_race %>% 
   filter(!(Ethnicity_Gender %in% "Total_Enrollment")) %>%
   arrange(Ethnicity_Gender) %>% 
   ggplot(aes(x=Ownership, y=Total_Count, fill=Ethnicity_Gender)) +
   geom_bar(position=position_dodge2(reverse=TRUE), stat='identity') +
   scale_fill_hue(direction=1) +
-  labs(x="Ownership", y="Total Student Count", title="Undergraduate Students enrolled for each Ownership by Ethnicity", subtitle=paste("State :", state, "; Locale :", locale)) +
+  labs(x="Ownership", y="Total Student Count", title="Undergraduate Students Enrolled for Each Ownership by Ethnicity", subtitle=paste("State :", state, "; Locale :", locale)) +
   theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5),
-        plot.subtitle = element_text(hjust = 0.5))  
+  theme(plot.title=element_text(hjust=0.5),
+        plot.subtitle=element_text(hjust=0.5))  
 
-# SNEHA TO ADD
+# Boxplot of Count of Students for Each Ownership by Gender for data generated within the demographic_info function
 demographic_data_gender <- demographic_data %>% 
   filter(Ethnicity_Gender %in% c("Total_Men", "Total_Women")) %>% 
   ggplot(aes(x=Ownership, y=Count, fill=Ethnicity_Gender)) +
