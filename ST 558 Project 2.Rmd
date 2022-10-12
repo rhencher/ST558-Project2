@@ -34,7 +34,6 @@ We must first install the necessary packages to contact our API and to then crea
 `jsonlite`: allows us to access the `fromJSON` function to convert JSON data to a data frame  
 `ggplot2`: a package in the tidyverse that we will use for creating graphics  
 `gridExtra`: allows us to arrange plots in a grid  
-`forcats`: TBD  
 `stingr`: allows us to manipulate individual characters within strings
 ```{r packages}
 library(tidyverse)
@@ -42,7 +41,6 @@ library(httr)
 library(jsonlite)
 library(ggplot2)
 library(gridExtra)
-library(forcats)
 library(stringr)
 ```
 
@@ -293,7 +291,7 @@ earnings_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", earnin
 
 
 # Data Exploration
-Now that we have the functions set up to extract data using the user inputs, it is time we explore the data and build on a narrative. The below function is a compilation of all the exploration that is done on each of the dataset. 
+Now that we have the functions set up to extract data utilizing the user inputs, it is time to explore the data and build on a narrative. The below function is a compilation of all of the explorations done on each of the six datasets produced through the functions above. 
 
 ```{r data_exploration}
 exploration <- function(general_data, cost_data, admissions_data, demographic_data, financial_data, earnings_data, state, locale) {
@@ -304,19 +302,19 @@ general_df <- head(general_data, n=5)
 # Summary table of data generated within the general_info function
 general_summary <- summary(general_data)  
 
-# Boxplot of Size by Ownership for data generated within the general_info function  
+# Box plot of Size by Ownership for data generated within the general_info function  
 size_by_ownership <- ggplot(general_data, aes(x=Ownership, y=Size)) + 
   geom_boxplot(fill = "#112446") + 
   labs(title="Size by Ownership Type for State Colleges") + 
   theme_minimal()  
 
-# Scatterplot of Admissions Rate vs In-State Tuition for data generated within the general_info function
+# Scatter plot of Admissions Rate vs In-State Tuition for data generated within the general_info function
 instate_vs_adm <- ggplot(general_data, aes(x=Admissions_Rate, y=In_State_Tuition)) + 
   geom_point(aes(color=Ownership)) + 
   labs(x="Admissions Rate", y="In-State Tuition", title="In-State Tuition vs Admissions Rate for State Colleges") + 
   theme_minimal()  
 
-# Scatterplot of Admissions Rate vs Out-of-State Tuition for data generated within the general_info function
+# Scatter plot of Admissions Rate vs Out-of-State Tuition for data generated within the general_info function
 outstate_vs_adm <- ggplot(general_data, aes(x=Admissions_Rate, y=Out_of_State_Tuition)) + 
   geom_point(aes(color=Ownership)) + 
   labs(x="Admissions Rate", y="Out-of-State Tuition", title="Out-of-State Tuition vs Admissions Rate for State Colleges") + 
@@ -329,23 +327,23 @@ admissions_df <- head(admissions_data, n=5)
 admissions_data2 <- admissions_data %>%
   mutate("Total_SAT"=(sumrow=SAT_Reading+SAT_Math), "Total_ACT"=(sumrow=ACT_English+ACT_Math))  
 
-# Contingency table for Test Requirement and Ownership by State 
+# Contingency table for Test Requirement by Ownership by State 
 ownership_test_requirement <- table(admissions_data$Ownership, admissions_data$Test_Requirements)
 
-# Scatterplot of Admissions Rate vs Total SAT with a regression line overlaid for data generated within the admissions_info function
+# Scatter plot of Admissions Rate vs Total SAT with a regression line overlaid for data generated within the admissions_info function
 sat_vs_adm <- ggplot(admissions_data2, aes(x=Admissions_Rate, y=Total_SAT)) + 
   geom_point(aes(shape=Test_Requirements, color=Test_Requirements)) + 
   geom_smooth(method=lm) + labs(x="Admissions Rate", y="Total SAT for Reading/Math", title="Total SAT Score vs Admissions Rate for US Colleges") + 
   theme_minimal()  
 
-# Scatterplot of Admissions Rate vs Total ACT with a regression line overlaid for data generated within the admissions_info function
+# Scatter plot of Admissions Rate vs Total ACT with a regression line overlaid for data generated within the admissions_info function
 act_vs_adm <- ggplot(admissions_data2, aes(x=Admissions_Rate, y=Total_ACT)) + 
   geom_point(aes(shape=Test_Requirements, color=Test_Requirements)) + 
   geom_smooth(method=lm) + 
   labs(x="Admissions Rate", y="Total ACT for English/Math", title="Total ACT Score vs Admissions Rate for US Colleges") + 
   theme_minimal()  
 
-# Scatterplot of Total SAT vs Total ACT with a regression line overlaid for data generated within the admissions_info function
+# Scatter plot of Total SAT vs Total ACT with a regression line overlaid for data generated within the admissions_info function
 act_vs_sat <- ggplot(admissions_data2, aes(x=Total_SAT, y=Total_ACT)) + 
   geom_point(aes(shape=Test_Requirements, color=Test_Requirements)) + 
   geom_smooth(method=lm) + 
@@ -355,7 +353,7 @@ act_vs_sat <- ggplot(admissions_data2, aes(x=Total_SAT, y=Total_ACT)) +
 # First 5 rows of data generated within the cost_info function
 cost_df <- head(cost_data, n=5)  
 
-# Boxplot of Ownership by In-State Tuition with points overlaid for data generated within the cost_info function
+# Box plot of Ownership by In-State Tuition with points overlaid for data generated within the cost_info function
 instate_by_ownership <- ggplot(cost_data, aes(x=Ownership, y=In_State_Tuition)) + 
   geom_boxplot(fill="#112446") + 
   scale_y_continuous(trans="log10") + 
@@ -363,7 +361,7 @@ instate_by_ownership <- ggplot(cost_data, aes(x=Ownership, y=In_State_Tuition)) 
   labs(y="In-State Tuition", title="In-State Tuition by Ownership Type for State Colleges") + 
   theme_minimal()  
 
-# Boxplot of Ownership by Out-of-State Tuition with points overlaid for data generated within the cost_info function
+# Box plot of Ownership by Out-of-State Tuition with points overlaid for data generated within the cost_info function
 outstate_by_ownership <- ggplot(cost_data, aes(x=Ownership, y=Out_of_State_Tuition)) + 
   geom_boxplot(fill="#112446") + 
   scale_y_continuous(trans="log10") + 
@@ -381,7 +379,7 @@ demographic_data_race <- demographic_data %>%
   summarise(Total_Count=sum(Count)) %>% 
   arrange(Total_Count, .by_group=TRUE)  
 
-# Barchart of Total Student Count by Ownership broken down by demographic for data generated within the demographic_info function
+# Bar plot of Total Student Count by Ownership broken down by demographic for data generated within the demographic_info function
 demographic_ownership <- demographic_data_race %>% 
   filter(!(Ethnicity_Gender %in% "Total_Enrollment")) %>%
   arrange(Ethnicity_Gender) %>% 
@@ -393,7 +391,7 @@ demographic_ownership <- demographic_data_race %>%
   theme(plot.title=element_text(hjust=0.5),
         plot.subtitle=element_text(hjust=0.5))  
 
-# Boxplot of Count of Students for Each Ownership by Gender for data generated within the demographic_info function
+# Box plot of Count of Students for Each Ownership by Gender for data generated within the demographic_info function
 demographic_data_gender <- demographic_data %>% 
   filter(Ethnicity_Gender %in% c("Total_Men", "Total_Women")) %>% 
   ggplot(aes(x=Ownership, y=Count, fill=Ethnicity_Gender)) +
@@ -421,7 +419,7 @@ financial_poverty_rate <- financial_data %>%
   theme(plot.title=element_text(hjust=0.5),
         plot.subtitle=element_text(hjust=0.5))  
 
-# Barchart of Mean Poverty Rate for each state by Ownership for data generated within the financial_info function
+# Bar plot of Mean Poverty Rate for each state by Ownership for data generated within the financial_info function
 poverty_rate_by_ownership <- financial_data %>% 
   group_by(Ownership) %>% 
   summarise(Mean_PR = mean(Poverty_Rate, na.rm=TRUE)) %>% 
@@ -437,7 +435,7 @@ poverty_rate_by_ownership <- financial_data %>%
 # First 5 rows of data generated within the earnings_info function
 earnings_df <- head(earnings_data, n=5)  
 
-# Scatterplot of In-State Tuition vs Median Earnings with a regression curve overlaid for data generated within the earnings_info function
+# Scatter plot of In-State Tuition vs Median Earnings with a regression curve overlaid for data generated within the earnings_info function
 instate_earning <- ggplot(earnings_data) +
   aes(x=In_State_Tuition, y=Median_Earnings) +
   geom_point(shape="circle", size=2, colour="#112446") +
@@ -447,7 +445,7 @@ instate_earning <- ggplot(earnings_data) +
   theme(plot.title=element_text(hjust=0.5),
         plot.subtitle=element_text(hjust=0.5))  
 
-# Scatterplot of Out-of-State Tuition vs Median Earnings with a regression curve overlaid for data generated within the earnings_info function
+# Scatter plot of Out-of-State Tuition vs Median Earnings with a regression curve overlaid for data generated within the earnings_info function
 outstate_earning <-  ggplot(earnings_data) +
   aes(x=Out_of_State_Tuition, y=Median_Earnings) +
   geom_point(shape="circle", size=2, colour="#112446") +
@@ -480,25 +478,25 @@ Take the user input of:
 
 ```{r main_function}
 main <- function() {
-  key = params$key
-  state = params$state
-  size = params$ordering
-  n = params$rows 
-  year = params$year
-  ownership = params$ownership
-  locale = params$locale
+  key=params$key
+  state=params$state
+  size=params$ordering
+  n=params$rows 
+  year=params$year
+  ownership=params$ownership
+  locale=params$locale
   general_data <- general_info(key, state, size, n, year)
-  cost_data <- cost_info(key, state, cost = size, n, year)
+  cost_data <- cost_info(key, state, cost=size, n, year)
   admissions_data <- admissions_info(key, rate=size, n, year)
   demographic_data <- demographic_info(key, state, size, locale, n, year)
   financial_data <- financial_info(key, state, size, year)
-  earnings_data <- earnings_info(key, earnings = size, n, year)
+  earnings_data <- earnings_info(key, earnings=size, n, year)
   exploration(general_data, cost_data, admissions_data, demographic_data, financial_data, earnings_data, state, locale)
 }
 ```
 *The function created above allows the user to provide input for the set of parameters just one time at the very top of the code and then applies those choices to all of the previous functions discussed. For instance, this makes it easy for a user who is interested in staying in a particular state to research varying topics on colleges just in the state of interest. It also makes it easy to pull data for a specific year without having to type it as an argument into each separate function.*  
 
-# Putting it all together
+# Putting It All Together
 
 Finally we call the main function and generate the report for the user inputs. The function stores the visualizations that are returned as a list object. It then iterates through the list object and prints out the plots neatly.
 
