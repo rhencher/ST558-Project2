@@ -1,6 +1,6 @@
 ---
-title: "Project 2"
-author: "Rachel Hencher"
+title: "College Scorecard API"
+author: "Rachel Hencher & Sneha Karanjai"
 date: '2022-09-26'
 output:
   html_document:
@@ -37,7 +37,7 @@ We must first install the necessary packages to contact our API and to then crea
 `ggplot2`: a package in the tidyverse that we will use for creating graphics  
 `gridExtra`: allows us to arrange plots in a grid  
 `forcats`: TBD
-```{r, message=FALSE}
+```{r packages, message=FALSE}
 library(tidyverse)
 library(httr)
 library(jsonlite)
@@ -57,7 +57,7 @@ The user should provide input for five arguments:
 - `size` requests whether the user would like data on large or small schools by selecting "desc" or "asc" respectively  
 - `n` is the number of records returned (1-100)  
 - `year` requests data from a particular year if the user desires data other than the latest available
-```{r}
+```{r general_function}
 general_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", state="NC", size="desc", n=50, year="latest")
 {
   url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&school.state=", state, "&per_page=", n, "&sort=student.size:", size, "&_fields=school.name,school.ownership,", year, ".student.size,", year, ".admissions.admission_rate.overall,", year, ".cost.tuition.in_state,", year, ".cost.tuition.out_of_state")
@@ -92,7 +92,7 @@ The user should provide input for five arguments:
 - `cost` requests whether the user would like data on expensive or more affordable schools by selecting "desc" or "asc" respectively  
 - `n` is the number of records returned (1-100)  
 - `year` requests data from a particular year if the user desires data other than the latest available
-```{r}
+```{r cost_function}
 cost_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", state="NC", cost="desc", n=50, year="latest")
 {
   url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&school.state=", state, "&per_page=", n, "&sort=cost.tuition.in_state:", cost, "&_fields=school.name,school.ownership,", year, ".cost.tuition.in_state,", year, ".cost.tuition.out_of_state,", year, ".cost.booksupply,", year, ".cost.roomboard.oncampus,", year, ".cost.roomboard.offcampus")
@@ -128,7 +128,7 @@ The user should provide input for five arguments:
 - `rate` requests whether the user would like data on less competitive or more selective schools by selecting "desc" or "asc" respectively  
 - `n` is the number of records returned (1-100)  
 - `year` requests data from a particular year if the user desires data other than the latest available
-```{r}
+```{r admissions_function}
 admissions_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", ownership="private", rate="asc", n=50, year="latest")
 {
   ownership <- ifelse(tolower(ownership)=="public", "1", 
@@ -170,7 +170,7 @@ The user should provide input four arguments:
 - `locale` requests whether the user would like to retrieve demographic info for colleges in a "city", "suburb", "town" or "rural" location  
 - `size` requests whether the user would like data on large or small schools by selecting "desc" or "asc" respectively    
 - `n` is the number of records returned (1-100)
-```{r}
+```{r demographic_function}
 demographic_info <- function(key="k42psBgICW3DEe6eS1gc7AxbTTYtOwOGN9URGVuT", state = "NC", size = "asc", locale="town", n=50, year= "latest")
 {
   location <- ifelse(locale=="city", "11,12,13", 
@@ -230,7 +230,7 @@ The user should provide input for five arguments:
 - `size` requests whether the user would like data on large or small schools by selecting "desc" or "asc" respectively  
 - `n` is the number of records returned (1-100)  
 - `year` requests data from a particular year if the user desires data other than the latest available
-```{r}
+```{r financial_function}
 financial_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", state="NC", size="desc", n=50, year="latest")
 {
   url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&school.state=", state, "&per_page=", n, "&sort=student.size:", size, "&_fields=school.name,school.ownership,school.city,", year, ".student.size,", year, ".student.demographics.poverty_rate,", year, ".student.demographics.median_family_income,", year, ".aid.median_debt.female_students,", year, ".aid.median_debt.male_students")
@@ -267,7 +267,7 @@ The user should provide input for four arguments:
 - `earnings` requests whether the user would like data on schools whose students are the highest earners or lowest earners by selecting "desc" or "asc" respectively  
 - `n` is the number of records returned (1-100)  
 - `year` requests data from a particular year if the user desires data other than the latest available
-```{r}
+```{r earnings_function}
 earnings_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", earnings="desc", n=50, year="latest")
 {
   url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&per_page=", n, "&sort=earnings.10_yrs_after_entry.median:", earnings, "&school.degrees_awarded.predominant=3&_fields=school.name,", year, ".cost.tuition.in_state,", year, ".cost.tuition.out_of_state,", year, ".earnings.10_yrs_after_entry.median,", year, ".earnings.10_yrs_after_entry.mean_earnings.female_students,", year, ".earnings.10_yrs_after_entry.mean_earnings.male_students")
@@ -291,7 +291,7 @@ earnings_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", earnin
 *In order to create this final function above, we again start by setting up our arguments to allow the user to return a more customized set of data. Defaults were set to our personal access key for the College Scorecard API, descending results by earnings 10 years after entry, 50 entries to be returned, and the latest information available through the API. We again utilized the `paste0` function in order to incorporate these arguments into the URL call. The `GET` function allows us to again call the URL and the `fromJSON` function allows us to read the JSON-formatted content into R. We then saved just the "results" portion of our data, excluding the metadata information, as a tibble using the `as_tibble` function and used `select` to order and rename the variables. `ends_with` is once again utilized to rename the variables more efficiently. This new tibble is then, once again, designated as our object to be returned for this function.*  
 
 # Data Exploration
-```{r, warning=FALSE, include=TRUE, echo=TRUE}
+```{r data_exploration, warning=FALSE, include=TRUE, echo=TRUE}
 exploration <- function(general_data, cost_data, admissions_data, demographic_data, financial_data, earnings_data, state, locale) {
 
 # Summary table of data generated within the general_info function
@@ -461,7 +461,7 @@ Take the user input of:
 - ownership 
 - locale
 
-```{r, warning=FALSE, include=TRUE, echo=TRUE}
+```{r main_function, warning=FALSE, include=TRUE, echo=TRUE}
 main <- function() {
   key = params$key
   state = params$state
