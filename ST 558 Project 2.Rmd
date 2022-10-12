@@ -293,7 +293,7 @@ earnings_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", earnin
 *In order to create this final function above, we again start by setting up our arguments to allow the user to return a more customized set of data. Defaults were set to our personal access key for the College Scorecard API, descending results by earnings 10 years after entry, 50 entries to be returned, and the latest information available through the API. We again utilized the `paste0` function in order to incorporate these arguments into the URL call. The `GET` function allows us to again call the URL and the `fromJSON` function allows us to read the JSON-formatted content into R. We then saved just the "results" portion of our data, excluding the metadata information, as a tibble using the `as_tibble` function and used `select` to order and rename the variables. `ends_with` is once again utilized to rename the variables more efficiently. This new tibble is then, once again, designated as our object to be returned for this function.*  
 
 # Data Exploration
-```{r data_exploration, warning=FALSE, include=TRUE, echo=TRUE}
+```{r data_exploration, warning=FALSE, message=FALSE, include=TRUE, echo=TRUE}
 exploration <- function(general_data, cost_data, admissions_data, demographic_data, financial_data, earnings_data, state, locale) {
 
 # Summary table of data generated within the general_info function
