@@ -793,48 +793,62 @@ for( i in 1:length(result_list)){
 ```
 
     ## # A tibble: 5 × 6
-    ##   Name                                        Ownership  Size Admissions_Rate In_State_Tuition Out_of_State_Tuition
-    ##   <chr>                                       <fct>     <int>           <dbl>            <int>                <int>
-    ## 1 North Carolina State University at Raleigh  Public    24671           0.462             9101                29220
-    ## 2 University of North Carolina at Charlotte   Public    23852           0.795             7096                20530
-    ## 3 East Carolina University                    Public    21766           0.879             7239                23516
-    ## 4 University of North Carolina at Chapel Hill Public    19261           0.25              8980                36159
-    ## 5 Wake Technical Community College            Public    18658          NA                 2432                 8576
-    ##      Name                        Ownership       Size       Admissions_Rate  In_State_Tuition Out_of_State_Tuition
-    ##  Length:100         Public            :65   Min.   :  744   Min.   :0.0774   Min.   : 1940    Min.   : 6548       
-    ##  Class :character   Private, Nonprofit:31   1st Qu.: 1214   1st Qu.:0.5442   1st Qu.: 2563    1st Qu.: 8680       
-    ##  Mode  :character   Proprietary       : 4   Median : 1779   Median :0.7120   Median : 2830    Median : 8908       
-    ##                                             Mean   : 4083   Mean   :0.6503   Mean   :13128    Mean   :18297       
-    ##                                             3rd Qu.: 4572   3rd Qu.:0.7798   3rd Qu.:25880    3rd Qu.:28750       
-    ##                                             Max.   :24671   Max.   :0.9138   Max.   :57760    Max.   :57760       
-    ##                                                             NA's   :53       NA's   :3        NA's   :3
+    ##   Name                                        Ownership  Size Admissions_Rate In_State_Tuition Out_of_State_Tui…
+    ##   <chr>                                       <fct>     <int>           <dbl>            <int>             <int>
+    ## 1 North Carolina State University at Raleigh  Public    24671           0.462             9101             29220
+    ## 2 University of North Carolina at Charlotte   Public    23852           0.795             7096             20530
+    ## 3 East Carolina University                    Public    21766           0.879             7239             23516
+    ## 4 University of North Carolina at Chapel Hill Public    19261           0.25              8980             36159
+    ## 5 Wake Technical Community College            Public    18658          NA                 2432              8576
+    ##      Name                        Ownership       Size       Admissions_Rate  In_State_Tuition
+    ##  Length:100         Public            :65   Min.   :  744   Min.   :0.0774   Min.   : 1940   
+    ##  Class :character   Private, Nonprofit:31   1st Qu.: 1214   1st Qu.:0.5442   1st Qu.: 2563   
+    ##  Mode  :character   Proprietary       : 4   Median : 1779   Median :0.7120   Median : 2830   
+    ##                                             Mean   : 4083   Mean   :0.6503   Mean   :13128   
+    ##                                             3rd Qu.: 4572   3rd Qu.:0.7798   3rd Qu.:25880   
+    ##                                             Max.   :24671   Max.   :0.9138   Max.   :57760   
+    ##                                                             NA's   :53       NA's   :3       
+    ##  Out_of_State_Tuition
+    ##  Min.   : 6548       
+    ##  1st Qu.: 8680       
+    ##  Median : 8908       
+    ##  Mean   :18297       
+    ##  3rd Qu.:28750       
+    ##  Max.   :57760       
+    ##  NA's   :3
 
 ![](README_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-1-2.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-1-3.png)<!-- -->
 
     ## # A tibble: 5 × 10
-    ##   Name                 Ownership    Admissions_Rate Test_Requirements      SAT_Reading SAT_Writing SAT_Math ACT_English ACT_Writing ACT_Math
-    ##   <chr>                <fct>                  <dbl> <fct>                        <int>       <int>    <int>       <int>       <int>    <int>
-    ## 1 Arizona College of … Proprietary                1 Neither required nor …          NA          NA       NA          NA          NA       NA
-    ## 2 Arizona College of … Proprietary                1 Neither required nor …          NA          NA       NA          NA          NA       NA
-    ## 3 Bais HaMedrash and … Private, No…               1 Neither required nor …          NA          NA       NA          NA          NA       NA
-    ## 4 California Christia… Private, No…               1 Recommended                     NA          NA       NA          NA          NA       NA
-    ## 5 California Jazz Con… Private, No…               1 Neither required nor …          NA          NA       NA          NA          NA       NA
+    ##   Name     Ownership  Admissions_Rate Test_Requirements SAT_Reading SAT_Writing SAT_Math ACT_English ACT_Writing
+    ##   <chr>    <fct>                <dbl> <fct>                   <int>       <int>    <int>       <int>       <int>
+    ## 1 Arizona… Proprieta…               1 Neither required…          NA          NA       NA          NA          NA
+    ## 2 Arizona… Proprieta…               1 Neither required…          NA          NA       NA          NA          NA
+    ## 3 Bais Ha… Private, …               1 Neither required…          NA          NA       NA          NA          NA
+    ## 4 Califor… Private, …               1 Recommended                NA          NA       NA          NA          NA
+    ## 5 Califor… Private, …               1 Neither required…          NA          NA       NA          NA          NA
+    ## # … with 1 more variable: ACT_Math <int>
     ##                     
-    ##                      Required Recommended Neither required nor recommended Do not know Considered but not required
-    ##   Public                   13           6                                0           6                           0
-    ##   Private, Nonprofit       22          11                               26           9                           0
-    ##   Proprietary               0           4                                3           0                           0
+    ##                      Required Recommended Neither required nor recommended Do not know
+    ##   Public                   13           6                                0           6
+    ##   Private, Nonprofit       22          11                               26           9
+    ##   Proprietary               0           4                                3           0
+    ##                     
+    ##                      Considered but not required
+    ##   Public                                       0
+    ##   Private, Nonprofit                           0
+    ##   Proprietary                                  0
 
 ![](README_files/figure-gfm/unnamed-chunk-1-4.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-1-5.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-1-6.png)<!-- -->
 
     ## # A tibble: 5 × 7
-    ##   Name                   Ownership          In_State_Tuition Out_of_State_Tuition Books_Supplies Room_Board_On Room_Board_Off
-    ##   <chr>                  <fct>                         <int>                <int>          <int>         <int>          <int>
-    ## 1 Wake Forest University Private, Nonprofit            57760                57760           1500         15520          15520
-    ## 2 Duke University        Private, Nonprofit            57633                57633           1434         16026             NA
-    ## 3 Davidson College       Private, Nonprofit            55175                55175           1000         15225             NA
-    ## 4 Guilford College       Private, Nonprofit            40120                40120           1270         12400          12400
-    ## 5 Meredith College       Private, Nonprofit            39952                39952            850         11746          11746
+    ##   Name                   Ownership In_State_Tuition Out_of_State_Tu… Books_Supplies Room_Board_On Room_Board_Off
+    ##   <chr>                  <fct>                <int>            <int>          <int>         <int>          <int>
+    ## 1 Wake Forest University Private,…            57760            57760           1500         15520          15520
+    ## 2 Duke University        Private,…            57633            57633           1434         16026             NA
+    ## 3 Davidson College       Private,…            55175            55175           1000         15225             NA
+    ## 4 Guilford College       Private,…            40120            40120           1270         12400          12400
+    ## 5 Meredith College       Private,…            39952            39952            850         11746          11746
 
 ![](README_files/figure-gfm/unnamed-chunk-1-7.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-1-8.png)<!-- -->
 
@@ -870,24 +884,24 @@ for( i in 1:length(result_list)){
 ![](README_files/figure-gfm/unnamed-chunk-1-9.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-1-10.png)<!-- -->
 
     ## # A tibble: 5 × 8
-    ##   Name                                        Ownership City         Size Poverty_Rate Median_Family_Inc… Female_Median_De… Male_Median_Debt
-    ##   <chr>                                       <fct>     <chr>       <int>        <dbl>              <int>             <int>            <int>
-    ## 1 North Carolina State University at Raleigh  Public    Raleigh     24671         7.36              64900             17500            17555
-    ## 2 University of North Carolina at Charlotte   Public    Charlotte   23852         6.77              44089             17500            15902
-    ## 3 East Carolina University                    Public    Greenville  21766         9.40              51027             18750            17000
-    ## 4 University of North Carolina at Chapel Hill Public    Chapel Hill 19261         7.01              58193             13000            13200
-    ## 5 Wake Technical Community College            Public    Raleigh     18658         6.64              24587              8276             6322
+    ##   Name                 Ownership City      Size Poverty_Rate Median_Family_In… Female_Median_D… Male_Median_Debt
+    ##   <chr>                <fct>     <chr>    <int>        <dbl>             <int>            <int>            <int>
+    ## 1 North Carolina Stat… Public    Raleigh  24671         7.36             64900            17500            17555
+    ## 2 University of North… Public    Charlot… 23852         6.77             44089            17500            15902
+    ## 3 East Carolina Unive… Public    Greenvi… 21766         9.40             51027            18750            17000
+    ## 4 University of North… Public    Chapel … 19261         7.01             58193            13000            13200
+    ## 5 Wake Technical Comm… Public    Raleigh  18658         6.64             24587             8276             6322
 
 ![](README_files/figure-gfm/unnamed-chunk-1-11.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-1-12.png)<!-- -->
 
     ## # A tibble: 5 × 6
-    ##   Name                                                    In_State_Tuition Out_of_State_Tui… Median_Earnings Mean_For_Females Mean_For_Males
-    ##   <chr>                                                              <int>             <int>           <int>            <int>          <int>
-    ## 1 Franklin W Olin College of Engineering                             57356             57356          132969               NA             NA
-    ## 2 Samuel Merritt University                                             NA                NA          123966           105400         138200
-    ## 3 University of Health Sciences and Pharmacy in St. Louis            30147             30147          121576           109300         112800
-    ## 4 Albany College of Pharmacy and Health Sciences                     36745             36745          119112           110100         119100
-    ## 5 MCPHS University                                                   34650             34650          118171           102600         115500
+    ##   Name                        In_State_Tuition Out_of_State_Tui… Median_Earnings Mean_For_Females Mean_For_Males
+    ##   <chr>                                  <int>             <int>           <int>            <int>          <int>
+    ## 1 Franklin W Olin College of…            57356             57356          132969               NA             NA
+    ## 2 Samuel Merritt University                 NA                NA          123966           105400         138200
+    ## 3 University of Health Scien…            30147             30147          121576           109300         112800
+    ## 4 Albany College of Pharmacy…            36745             36745          119112           110100         119100
+    ## 5 MCPHS University                       34650             34650          118171           102600         115500
     ## [1] 0.2187894
 
 ``` r
