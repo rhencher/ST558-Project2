@@ -674,62 +674,6 @@ Additionally, the `head` function was used in order to give the user a
 preview with five rows of the data frame for each of the six functions
 above.*
 
-In the graphics created above, we start by exploring the general
-information data. This dataset is a compilation of the tuition and
-admission details for schools in a particular state. Since the general
-data table consists of a substantial number of numeric columns, we draw
-summary statistics for these numerical columns after first returning the
-first five rows in the data frame. We then have a boxplot to see the
-measure of spread of the number of students for the colleges in the
-state separated by ownership. To understand whether there is a
-correlation between tuition and the admission rate, we have a scatter
-plot for both in-state and out-of-state tuition by admission rate coded
-by ownership. It appears there is a weak negative correlation in both
-instances, with it being slightly stronger between admission rates and
-out-of-state tuition than between admission rates and in-state tuition.
-
-We then analyze the admissions data consisting of the admissions rate
-and test details for schools in a particular state. Again, we begin by
-returning the first five rows of the data frame. Next, we visualize the
-total SAT and total ACT scores vs admission rates coded by test
-requirements to see if the total scores have a positive correlation with
-admission rate for schools. This does not appear to be the case for
-schools with high admission rates, but it would be interesting to see if
-the same can be said for schools with low admission rates. We also
-checked whether a higher ACT score is correlated with a higher SAT
-score, which it clearly is.
-
-We next move on to understand the cost perspective of these schools and
-understand if the ownership of schools affects the different tuition
-costs. We again print the first five rows of the data frame (and will
-continue to do so for each of the six functions created) and also
-explore the variability of in-state and out-of-state tuition costs by
-ownership. It is clear from these box plots that both in-state and
-out-of-state tuition are substantially lower for public schools than for
-private schools. Although this is unsurprising for in-state tuition, the
-large discrepency between median tuition rates for out-of-state public
-schools and private schools was somewhat surprising to find.
-
-Now that we have covered the different aspects of the schools, it would
-be pertinent to see the student information in these schools. We start
-by understanding the student diversity. We explore a school’s diversity
-by understanding the number of students within each level of ethnicity
-and gender. We group ethnicities by the school’s ownership and sum up
-the total count to see the dominant ethnicity of students within each
-ownership. We then see the total number of men and women in each
-ownership.
-
-Moving next onto the financial backgrounds of students enrolled in these
-schools, we explore the financial data. We plotted the distribution of
-poverty rates for the particular state and investigate the mean poverty
-rate of schools in each ownership.
-
-Finally, we desired to know the prospective outcome of the students
-graduating from these schools to see how much they spent vs how much
-they earned after graduating. For this, we have a scatter plot for the
-median earnings of students plotted against tuition they would have paid
-for that school.
-
 # Main Function
 
 In order for the user to pull all of the information at once with one
@@ -793,51 +737,37 @@ for( i in 1:length(result_list)){
 ```
 
     ## # A tibble: 5 × 6
-    ##   Name                                        Ownership  Size Admissions_Rate In_State_Tuition Out_of_State_Tui…
-    ##   <chr>                                       <fct>     <int>           <dbl>            <int>             <int>
-    ## 1 North Carolina State University at Raleigh  Public    24671           0.462             9101             29220
-    ## 2 University of North Carolina at Charlotte   Public    23852           0.795             7096             20530
-    ## 3 East Carolina University                    Public    21766           0.879             7239             23516
-    ## 4 University of North Carolina at Chapel Hill Public    19261           0.25              8980             36159
-    ## 5 Wake Technical Community College            Public    18658          NA                 2432              8576
-    ##      Name                        Ownership       Size       Admissions_Rate  In_State_Tuition
-    ##  Length:100         Public            :65   Min.   :  744   Min.   :0.0774   Min.   : 1940   
-    ##  Class :character   Private, Nonprofit:31   1st Qu.: 1214   1st Qu.:0.5442   1st Qu.: 2563   
-    ##  Mode  :character   Proprietary       : 4   Median : 1779   Median :0.7120   Median : 2830   
-    ##                                             Mean   : 4083   Mean   :0.6503   Mean   :13128   
-    ##                                             3rd Qu.: 4572   3rd Qu.:0.7798   3rd Qu.:25880   
-    ##                                             Max.   :24671   Max.   :0.9138   Max.   :57760   
-    ##                                                             NA's   :53       NA's   :3       
-    ##  Out_of_State_Tuition
-    ##  Min.   : 6548       
-    ##  1st Qu.: 8680       
-    ##  Median : 8908       
-    ##  Mean   :18297       
-    ##  3rd Qu.:28750       
-    ##  Max.   :57760       
-    ##  NA's   :3
+    ##   Name                                        Ownership  Size Admissions_Rate In_State_Tuition Out_of_State_Tuition
+    ##   <chr>                                       <fct>     <int>           <dbl>            <int>                <int>
+    ## 1 North Carolina State University at Raleigh  Public    24671           0.462             9101                29220
+    ## 2 University of North Carolina at Charlotte   Public    23852           0.795             7096                20530
+    ## 3 East Carolina University                    Public    21766           0.879             7239                23516
+    ## 4 University of North Carolina at Chapel Hill Public    19261           0.25              8980                36159
+    ## 5 Wake Technical Community College            Public    18658          NA                 2432                 8576
+    ##      Name                        Ownership       Size       Admissions_Rate  In_State_Tuition Out_of_State_Tuition
+    ##  Length:100         Public            :65   Min.   :  744   Min.   :0.0774   Min.   : 1940    Min.   : 6548       
+    ##  Class :character   Private, Nonprofit:31   1st Qu.: 1214   1st Qu.:0.5442   1st Qu.: 2563    1st Qu.: 8680       
+    ##  Mode  :character   Proprietary       : 4   Median : 1779   Median :0.7120   Median : 2830    Median : 8908       
+    ##                                             Mean   : 4083   Mean   :0.6503   Mean   :13128    Mean   :18297       
+    ##                                             3rd Qu.: 4572   3rd Qu.:0.7798   3rd Qu.:25880    3rd Qu.:28750       
+    ##                                             Max.   :24671   Max.   :0.9138   Max.   :57760    Max.   :57760       
+    ##                                                             NA's   :53       NA's   :3        NA's   :3
 
 ![](README_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-1-2.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-1-3.png)<!-- -->
 
     ## # A tibble: 5 × 10
-    ##   Name     Ownership  Admissions_Rate Test_Requirements SAT_Reading SAT_Writing SAT_Math ACT_English ACT_Writing
-    ##   <chr>    <fct>                <dbl> <fct>                   <int>       <int>    <int>       <int>       <int>
-    ## 1 Arizona… Proprieta…               1 Neither required…          NA          NA       NA          NA          NA
-    ## 2 Arizona… Proprieta…               1 Neither required…          NA          NA       NA          NA          NA
-    ## 3 Bais Ha… Private, …               1 Neither required…          NA          NA       NA          NA          NA
-    ## 4 Califor… Private, …               1 Recommended                NA          NA       NA          NA          NA
-    ## 5 Califor… Private, …               1 Neither required…          NA          NA       NA          NA          NA
-    ## # … with 1 more variable: ACT_Math <int>
+    ##   Name    Ownership  Admissions_Rate Test_Requiremen… SAT_Reading SAT_Writing SAT_Math ACT_English ACT_Writing ACT_Math
+    ##   <chr>   <fct>                <dbl> <fct>                  <int>       <int>    <int>       <int>       <int>    <int>
+    ## 1 Arizon… Proprieta…               1 Neither require…          NA          NA       NA          NA          NA       NA
+    ## 2 Arizon… Proprieta…               1 Neither require…          NA          NA       NA          NA          NA       NA
+    ## 3 Bais H… Private, …               1 Neither require…          NA          NA       NA          NA          NA       NA
+    ## 4 Califo… Private, …               1 Recommended               NA          NA       NA          NA          NA       NA
+    ## 5 Califo… Private, …               1 Neither require…          NA          NA       NA          NA          NA       NA
     ##                     
-    ##                      Required Recommended Neither required nor recommended Do not know
-    ##   Public                   13           6                                0           6
-    ##   Private, Nonprofit       22          11                               26           9
-    ##   Proprietary               0           4                                3           0
-    ##                     
-    ##                      Considered but not required
-    ##   Public                                       0
-    ##   Private, Nonprofit                           0
-    ##   Proprietary                                  0
+    ##                      Required Recommended Neither required nor recommended Do not know Considered but not required
+    ##   Public                   13           6                                0           6                           0
+    ##   Private, Nonprofit       22          11                               26           9                           0
+    ##   Proprietary               0           4                                3           0                           0
 
 ![](README_files/figure-gfm/unnamed-chunk-1-4.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-1-5.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-1-6.png)<!-- -->
 
