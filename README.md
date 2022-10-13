@@ -3,25 +3,25 @@ College Scorecard API Data Analysis
 Rachel Hencher & Sneha Karanjai
 2022-10-12
 
-- <a href="#required-packages" id="toc-required-packages">1 Required
+- <a href="#required-packages" id="toc-required-packages">Required
   Packages</a>
-- <a href="#functions" id="toc-functions">2 Functions</a>
-  - <a href="#general_info" id="toc-general_info">2.1
-    <code>general_info()</code></a>
-  - <a href="#cost_info" id="toc-cost_info">2.2 <code>cost_info()</code></a>
-  - <a href="#admissions_info" id="toc-admissions_info">2.3
-    <code>admissions_info()</code></a>
-  - <a href="#demographic_info" id="toc-demographic_info">2.4
-    <code>demographic_info()</code></a>
-  - <a href="#financial_info" id="toc-financial_info">2.5
-    <code>financial_info()</code></a>
-  - <a href="#earnings_info" id="toc-earnings_info">2.6
-    <code>earnings_info()</code></a>
-- <a href="#data-exploration" id="toc-data-exploration">3 Data
+- <a href="#functions" id="toc-functions">Functions</a>
+  - <a href="#general_info"
+    id="toc-general_info"><code>general_info()</code></a>
+  - <a href="#cost_info" id="toc-cost_info"><code>cost_info()</code></a>
+  - <a href="#admissions_info"
+    id="toc-admissions_info"><code>admissions_info()</code></a>
+  - <a href="#demographic_info"
+    id="toc-demographic_info"><code>demographic_info()</code></a>
+  - <a href="#financial_info"
+    id="toc-financial_info"><code>financial_info()</code></a>
+  - <a href="#earnings_info"
+    id="toc-earnings_info"><code>earnings_info()</code></a>
+- <a href="#data-exploration" id="toc-data-exploration">Data
   Exploration</a>
-- <a href="#main-function" id="toc-main-function">4 Main Function</a>
-- <a href="#putting-it-all-together" id="toc-putting-it-all-together">5
-  Putting It All Together</a>
+- <a href="#main-function" id="toc-main-function">Main Function</a>
+- <a href="#putting-it-all-together"
+  id="toc-putting-it-all-together">Putting It All Together</a>
 
 The goal for this project is to create a vignette about contacting an
 API using functions created to query, parse, and return well-structured
@@ -47,7 +47,7 @@ a limit of 100 records to be pulled at one time and it is done at
 random. It would be interesting to explore web scraping to extract the
 entire data for each mutation for more concrete analysis.
 
-# 1 Required Packages
+# Required Packages
 
 We must first install the necessary packages to contact our API and to
 then create graphics. The following packages were used:
@@ -71,13 +71,13 @@ library(gridExtra)
 library(stringr)
 ```
 
-# 2 Functions
+# Functions
 
 Each of the functions below will contact the College Scorecard API and
 return well-formatted, parsed data in the form of data frames on the
 specified topics.
 
-## 2.1 `general_info()`
+## `general_info()`
 
 The following function returns general information on either the largest
 or smallest *n* colleges in a particular state. The variables returned
@@ -137,7 +137,7 @@ function to create descriptions for the various levels of the
 numeric coding. This new tibble is then designated as our object to be
 returned for this function.*
 
-## 2.2 `cost_info()`
+## `cost_info()`
 
 The following function returns cost information on either the most or
 least expensive *n* colleges in a particular state by in-state tuition.
@@ -197,7 +197,7 @@ create more informative descriptions for the various levels of the
 “ownership” variable. This new tibble is then designated as our object
 to be returned for this function.*
 
-## 2.3 `admissions_info()`
+## `admissions_info()`
 
 The following function returns admissions info on *n* colleges under a
 particular “ownership” category. The selected variables allow the user
@@ -272,7 +272,7 @@ previously displaying a numeric code, but we were able to designate
 better descriptions for each level using information provided on the
 College Scorecard website.*
 
-## 2.4 `demographic_info()`
+## `demographic_info()`
 
 The following function returns demographic information for students at
 *n* colleges, selected based on the location type. Race & ethnicity are
@@ -354,7 +354,7 @@ the proportion. We then use `pivot_longer` to take the wide-format data
 and to convert it to long-format data. Finally, we indicate that we
 would like to return this new data frame.*
 
-## 2.5 `financial_info()`
+## `financial_info()`
 
 The following function returns student financial information on either
 the largest or smallest *n* colleges in a particular state. Variables
@@ -414,7 +414,7 @@ more informative descriptions for the various levels of the “ownership”
 variable. This new tibble is then designated as our object to be
 returned for this function.*
 
-## 2.6 `earnings_info()`
+## `earnings_info()`
 
 The following function returns earnings information on *n* colleges with
 either the highest or lowest median student earnings 10 years after
@@ -469,7 +469,7 @@ variables. `ends_with` is once again utilized to rename the variables
 more efficiently. This new tibble is then, once again, designated as our
 object to be returned for this function.*
 
-# 3 Data Exploration
+# Data Exploration
 
 Now that we have the functions set up to extract data utilizing the user
 inputs, it is time to explore the data and build on a narrative. The
@@ -730,7 +730,7 @@ they earned after graduating. For this, we have a scatter plot for the
 median earnings of students plotted against tuition they would have paid
 for that school.
 
-# 4 Main Function
+# Main Function
 
 In order for the user to pull all of the information at once with one
 set of inputs, use the “Main Function” created below.  
@@ -770,7 +770,7 @@ state of interest. It also makes it easy to pull data for a specific
 year without having to type it as an argument into each separate
 function.*
 
-# 5 Putting It All Together
+# Putting It All Together
 
 Finally we call the main function and generate the report for the user
 inputs. The function stores the visualizations that are returned as a
@@ -842,13 +842,13 @@ for( i in 1:length(result_list)){
 ![](README_files/figure-gfm/unnamed-chunk-1-4.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-1-5.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-1-6.png)<!-- -->
 
     ## # A tibble: 5 × 7
-    ##   Name                   Ownership In_State_Tuition Out_of_State_Tu… Books_Supplies Room_Board_On Room_Board_Off
-    ##   <chr>                  <fct>                <int>            <int>          <int>         <int>          <int>
-    ## 1 Wake Forest University Private,…            57760            57760           1500         15520          15520
-    ## 2 Duke University        Private,…            57633            57633           1434         16026             NA
-    ## 3 Davidson College       Private,…            55175            55175           1000         15225             NA
-    ## 4 Guilford College       Private,…            40120            40120           1270         12400          12400
-    ## 5 Meredith College       Private,…            39952            39952            850         11746          11746
+    ##   Name                   Ownership      In_State_Tuition Out_of_State_Tuit… Books_Supplies Room_Board_On Room_Board_Off
+    ##   <chr>                  <fct>                     <int>              <int>          <int>         <int>          <int>
+    ## 1 Wake Forest University Private, Nonp…            57760              57760           1500         15520          15520
+    ## 2 Duke University        Private, Nonp…            57633              57633           1434         16026             NA
+    ## 3 Davidson College       Private, Nonp…            55175              55175           1000         15225             NA
+    ## 4 Guilford College       Private, Nonp…            40120              40120           1270         12400          12400
+    ## 5 Meredith College       Private, Nonp…            39952              39952            850         11746          11746
 
 ![](README_files/figure-gfm/unnamed-chunk-1-7.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-1-8.png)<!-- -->
 
@@ -884,24 +884,24 @@ for( i in 1:length(result_list)){
 ![](README_files/figure-gfm/unnamed-chunk-1-9.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-1-10.png)<!-- -->
 
     ## # A tibble: 5 × 8
-    ##   Name                 Ownership City      Size Poverty_Rate Median_Family_In… Female_Median_D… Male_Median_Debt
-    ##   <chr>                <fct>     <chr>    <int>        <dbl>             <int>            <int>            <int>
-    ## 1 North Carolina Stat… Public    Raleigh  24671         7.36             64900            17500            17555
-    ## 2 University of North… Public    Charlot… 23852         6.77             44089            17500            15902
-    ## 3 East Carolina Unive… Public    Greenvi… 21766         9.40             51027            18750            17000
-    ## 4 University of North… Public    Chapel … 19261         7.01             58193            13000            13200
-    ## 5 Wake Technical Comm… Public    Raleigh  18658         6.64             24587             8276             6322
+    ##   Name                      Ownership City      Size Poverty_Rate Median_Family_Inc… Female_Median_De… Male_Median_Debt
+    ##   <chr>                     <fct>     <chr>    <int>        <dbl>              <int>             <int>            <int>
+    ## 1 North Carolina State Uni… Public    Raleigh  24671         7.36              64900             17500            17555
+    ## 2 University of North Caro… Public    Charlot… 23852         6.77              44089             17500            15902
+    ## 3 East Carolina University  Public    Greenvi… 21766         9.40              51027             18750            17000
+    ## 4 University of North Caro… Public    Chapel … 19261         7.01              58193             13000            13200
+    ## 5 Wake Technical Community… Public    Raleigh  18658         6.64              24587              8276             6322
 
 ![](README_files/figure-gfm/unnamed-chunk-1-11.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-1-12.png)<!-- -->
 
     ## # A tibble: 5 × 6
-    ##   Name                        In_State_Tuition Out_of_State_Tui… Median_Earnings Mean_For_Females Mean_For_Males
-    ##   <chr>                                  <int>             <int>           <int>            <int>          <int>
-    ## 1 Franklin W Olin College of…            57356             57356          132969               NA             NA
-    ## 2 Samuel Merritt University                 NA                NA          123966           105400         138200
-    ## 3 University of Health Scien…            30147             30147          121576           109300         112800
-    ## 4 Albany College of Pharmacy…            36745             36745          119112           110100         119100
-    ## 5 MCPHS University                       34650             34650          118171           102600         115500
+    ##   Name                              In_State_Tuition Out_of_State_Tuit… Median_Earnings Mean_For_Females Mean_For_Males
+    ##   <chr>                                        <int>              <int>           <int>            <int>          <int>
+    ## 1 Franklin W Olin College of Engin…            57356              57356          132969               NA             NA
+    ## 2 Samuel Merritt University                       NA                 NA          123966           105400         138200
+    ## 3 University of Health Sciences an…            30147              30147          121576           109300         112800
+    ## 4 Albany College of Pharmacy and H…            36745              36745          119112           110100         119100
+    ## 5 MCPHS University                             34650              34650          118171           102600         115500
     ## [1] 0.2187894
 
 ``` r
@@ -933,7 +933,9 @@ admission rate for schools. This does not appear to be the case for
 schools with high admission rates, but it would be interesting to see if
 the same can be said for schools with low admission rates. We also
 checked whether a higher ACT score is correlated with a higher SAT
-score, which it clearly is.
+score, which it clearly is. Majority of the Public schools Require a
+Test Score for admission whereas majority of private schools neither
+require nor recommend it.
 
 We next move on to understand the cost perspective of these schools and
 understand if the ownership of schools affects the different tuition
