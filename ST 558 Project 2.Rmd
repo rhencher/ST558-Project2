@@ -17,7 +17,7 @@ params:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(warning=FALSE, message=FALSE, include=TRUE, echo=TRUE)
+knitr::opts_chunk$set(warning=FALSE, message=FALSE, include=TRUE, echo=TRUE, tidy.opts=list(width.cutoff=60), tidy=TRUE)
 ```
 
 The goal for this project is to create a vignette about contacting an API using functions created to query, parse, and return well-structured data. Then, to use the functions to obtain data from the API and do some exploratory data analysis.  
