@@ -1,27 +1,27 @@
-College Scorecard API
+College Scorecard API Data Analysis
 ================
 Rachel Hencher & Sneha Karanjai
-2022-09-26
+2022-10-12
 
-- <a href="#required-packages" id="toc-required-packages">Required
+- <a href="#required-packages" id="toc-required-packages">1 Required
   Packages</a>
-- <a href="#functions" id="toc-functions">Functions</a>
-  - <a href="#general_info"
-    id="toc-general_info"><code>general_info()</code></a>
-  - <a href="#cost_info" id="toc-cost_info"><code>cost_info()</code></a>
-  - <a href="#admissions_info"
-    id="toc-admissions_info"><code>admissions_info()</code></a>
-  - <a href="#demographic_info"
-    id="toc-demographic_info"><code>demographic_info()</code></a>
-  - <a href="#financial_info"
-    id="toc-financial_info"><code>financial_info()</code></a>
-  - <a href="#earnings_info"
-    id="toc-earnings_info"><code>earnings_info()</code></a>
-- <a href="#data-exploration" id="toc-data-exploration">Data
+- <a href="#functions" id="toc-functions">2 Functions</a>
+  - <a href="#general_info" id="toc-general_info">2.1
+    <code>general_info()</code></a>
+  - <a href="#cost_info" id="toc-cost_info">2.2 <code>cost_info()</code></a>
+  - <a href="#admissions_info" id="toc-admissions_info">2.3
+    <code>admissions_info()</code></a>
+  - <a href="#demographic_info" id="toc-demographic_info">2.4
+    <code>demographic_info()</code></a>
+  - <a href="#financial_info" id="toc-financial_info">2.5
+    <code>financial_info()</code></a>
+  - <a href="#earnings_info" id="toc-earnings_info">2.6
+    <code>earnings_info()</code></a>
+- <a href="#data-exploration" id="toc-data-exploration">3 Data
   Exploration</a>
-- <a href="#main-function" id="toc-main-function">Main Function</a>
-- <a href="#putting-it-all-together"
-  id="toc-putting-it-all-together">Putting it all together</a>
+- <a href="#main-function" id="toc-main-function">4 Main Function</a>
+- <a href="#putting-it-all-together" id="toc-putting-it-all-together">5
+  Putting It All Together</a>
 
 The goal for this project is to create a vignette about contacting an
 API using functions created to query, parse, and return well-structured
@@ -42,9 +42,12 @@ students ten years after entry.
 
 Although the College Scorecard API only has one endpoint, there are
 hundreds of possible mutations for this enormous set of data, several
-combinations of which are explored below.
+combinations of which are explored below. It is to note that the API has
+a limit of 100 records to be pulled at one time and it is done at
+random. It would be interesting to explore web scraping to extract the
+entire data for each mutation for more concrete analysis.
 
-# Required Packages
+# 1 Required Packages
 
 We must first install the necessary packages to contact our API and to
 then create graphics. The following packages were used:
@@ -57,7 +60,6 @@ data to a data frame
 `ggplot2`: a package in the tidyverse that we will use for creating
 graphics  
 `gridExtra`: allows us to arrange plots in a grid  
-`forcats`: TBD  
 `stingr`: allows us to manipulate individual characters within strings
 
 ``` r
@@ -66,17 +68,16 @@ library(httr)
 library(jsonlite)
 library(ggplot2)
 library(gridExtra)
-library(forcats)
 library(stringr)
 ```
 
-# Functions
+# 2 Functions
 
 Each of the functions below will contact the College Scorecard API and
 return well-formatted, parsed data in the form of data frames on the
 specified topics.
 
-## `general_info()`
+## 2.1 `general_info()`
 
 The following function returns general information on either the largest
 or smallest *n* colleges in a particular state. The variables returned
@@ -136,7 +137,7 @@ function to create descriptions for the various levels of the
 numeric coding. This new tibble is then designated as our object to be
 returned for this function.*
 
-## `cost_info()`
+## 2.2 `cost_info()`
 
 The following function returns cost information on either the most or
 least expensive *n* colleges in a particular state by in-state tuition.
@@ -196,7 +197,7 @@ create more informative descriptions for the various levels of the
 “ownership” variable. This new tibble is then designated as our object
 to be returned for this function.*
 
-## `admissions_info()`
+## 2.3 `admissions_info()`
 
 The following function returns admissions info on *n* colleges under a
 particular “ownership” category. The selected variables allow the user
@@ -213,13 +214,10 @@ or more selective schools by selecting “desc” or “asc” respectively
 other than the latest available
 
 ``` r
-admissions_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", ownership="private", rate="asc", n=50, year="latest")
+admissions_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr",rate="asc", n=50, year="latest")
 {
-  ownership <- ifelse(tolower(ownership)=="public", "1", 
-                      ifelse(tolower(ownership)=="private", "2", 
-                             ifelse(tolower(ownership)=="proprietary", "3", "ERROR")))  
         
-  url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&school.ownership=", ownership, "&per_page=", n, "&sort=admissions.admission_rate.overall:", rate, "&school.degrees_awarded.predominant=3&_fields=school.name,", year, ".admissions.admission_rate.overall,", year, ".admissions.test_requirements,", year, ".admissions.sat_scores.midpoint.critical_reading,", year, ".admissions.sat_scores.midpoint.writing,", year, ".admissions.sat_scores.midpoint.math,", year, ".admissions.act_scores.midpoint.english,", year, ".admissions.act_scores.midpoint.writing,", year, ".admissions.act_scores.midpoint.math")  
+  url <- paste0("http://api.data.gov/ed/collegescorecard/v1/schools?api_key=", key, "&per_page=", n, "&sort=admissions.admission_rate.overall:", rate, "&school.degrees_awarded.predominant=3&_fields=school.name,school.ownership,", year, ".admissions.admission_rate.overall,", year, ".admissions.test_requirements,", year, ".admissions.sat_scores.midpoint.critical_reading,", year, ".admissions.sat_scores.midpoint.writing,", year, ".admissions.sat_scores.midpoint.math,", year, ".admissions.act_scores.midpoint.english,", year, ".admissions.act_scores.midpoint.writing,", year, ".admissions.act_scores.midpoint.math")  
 
   data <- GET(url)  
   
@@ -241,6 +239,9 @@ admissions_info <- function(key="D3KHf387z9W0EaDoVZNsvD6aOSHPWZmwDvKpTxpr", owne
     
     admissions_data$Test_Requirements <- as.factor(admissions_data$Test_Requirements)
       levels(admissions_data$Test_Requirements) <- c("Required", "Recommended", "Neither required nor recommended", "Do not know", "Considered but not required")  
+      
+    admissions_data$Ownership <- as.factor(admissions_data$Ownership)
+        levels(admissions_data$Ownership) <- c("Public", "Private, Nonprofit", "Proprietary")  
   
   return(admissions_data)  
 }
@@ -271,7 +272,7 @@ previously displaying a numeric code, but we were able to designate
 better descriptions for each level using information provided on the
 College Scorecard website.*
 
-## `demographic_info()`
+## 2.4 `demographic_info()`
 
 The following function returns demographic information for students at
 *n* colleges, selected based on the location type. Race & ethnicity are
@@ -353,7 +354,7 @@ the proportion. We then use `pivot_longer` to take the wide-format data
 and to convert it to long-format data. Finally, we indicate that we
 would like to return this new data frame.*
 
-## `financial_info()`
+## 2.5 `financial_info()`
 
 The following function returns student financial information on either
 the largest or smallest *n* colleges in a particular state. Variables
@@ -413,7 +414,7 @@ more informative descriptions for the various levels of the “ownership”
 variable. This new tibble is then designated as our object to be
 returned for this function.*
 
-## `earnings_info()`
+## 2.6 `earnings_info()`
 
 The following function returns earnings information on *n* colleges with
 either the highest or lowest median student earnings 10 years after
@@ -468,12 +469,12 @@ variables. `ends_with` is once again utilized to rename the variables
 more efficiently. This new tibble is then, once again, designated as our
 object to be returned for this function.*
 
-# Data Exploration
+# 3 Data Exploration
 
-Now that we have the functions set up to extract data using the user
-inputs, it is time we explore the data and build on a narrative. The
-below function is a compilation of all the exploration that is done on
-each of the dataset.
+Now that we have the functions set up to extract data utilizing the user
+inputs, it is time to explore the data and build on a narrative. The
+below function is a compilation of all of the explorations done on each
+of the six datasets produced through the functions above.
 
 ``` r
 exploration <- function(general_data, cost_data, admissions_data, demographic_data, financial_data, earnings_data, state, locale) {
@@ -484,23 +485,26 @@ general_df <- head(general_data, n=5)
 # Summary table of data generated within the general_info function
 general_summary <- summary(general_data)  
 
-# Boxplot of Size by Ownership for data generated within the general_info function  
+# Box plot of Size by Ownership for data generated within the general_info function  
 size_by_ownership <- ggplot(general_data, aes(x=Ownership, y=Size)) + 
   geom_boxplot(fill = "#112446") + 
   labs(title="Size by Ownership Type for State Colleges") + 
-  theme_minimal()  
+  theme_minimal() +
+  theme(plot.title=element_text(hjust=0.5))
 
-# Scatterplot of Admissions Rate vs In-State Tuition for data generated within the general_info function
+# Scatter plot of Admissions Rate vs In-State Tuition for data generated within the general_info function
 instate_vs_adm <- ggplot(general_data, aes(x=Admissions_Rate, y=In_State_Tuition)) + 
   geom_point(aes(color=Ownership)) + 
   labs(x="Admissions Rate", y="In-State Tuition", title="In-State Tuition vs Admissions Rate for State Colleges") + 
-  theme_minimal()  
+  theme_minimal() +
+  theme(plot.title=element_text(hjust=0.5))
 
-# Scatterplot of Admissions Rate vs Out-of-State Tuition for data generated within the general_info function
+# Scatter plot of Admissions Rate vs Out-of-State Tuition for data generated within the general_info function
 outstate_vs_adm <- ggplot(general_data, aes(x=Admissions_Rate, y=Out_of_State_Tuition)) + 
   geom_point(aes(color=Ownership)) + 
   labs(x="Admissions Rate", y="Out-of-State Tuition", title="Out-of-State Tuition vs Admissions Rate for State Colleges") + 
-  theme_minimal()  
+  theme_minimal() +
+  theme(plot.title=element_text(hjust=0.5))
 
 # First 5 rows of data generated within the admissions_info function
 admissions_df <- head(admissions_data, n=5) 
@@ -509,44 +513,52 @@ admissions_df <- head(admissions_data, n=5)
 admissions_data2 <- admissions_data %>%
   mutate("Total_SAT"=(sumrow=SAT_Reading+SAT_Math), "Total_ACT"=(sumrow=ACT_English+ACT_Math))  
 
-# Scatterplot of Admissions Rate vs Total SAT with a regression line overlaid for data generated within the admissions_info function
+# Contingency table for Test Requirement by Ownership by State 
+ownership_test_requirement <- table(admissions_data$Ownership, admissions_data$Test_Requirements)
+
+# Scatter plot of Admissions Rate vs Total SAT with a regression line overlaid for data generated within the admissions_info function
 sat_vs_adm <- ggplot(admissions_data2, aes(x=Admissions_Rate, y=Total_SAT)) + 
   geom_point(aes(shape=Test_Requirements, color=Test_Requirements)) + 
   geom_smooth(method=lm) + labs(x="Admissions Rate", y="Total SAT for Reading/Math", title="Total SAT Score vs Admissions Rate for US Colleges") + 
-  theme_minimal()  
+  theme_minimal() +
+  theme(plot.title=element_text(hjust=0.5))
 
-# Scatterplot of Admissions Rate vs Total ACT with a regression line overlaid for data generated within the admissions_info function
+# Scatter plot of Admissions Rate vs Total ACT with a regression line overlaid for data generated within the admissions_info function
 act_vs_adm <- ggplot(admissions_data2, aes(x=Admissions_Rate, y=Total_ACT)) + 
   geom_point(aes(shape=Test_Requirements, color=Test_Requirements)) + 
   geom_smooth(method=lm) + 
   labs(x="Admissions Rate", y="Total ACT for English/Math", title="Total ACT Score vs Admissions Rate for US Colleges") + 
-  theme_minimal()  
+  theme_minimal() +
+  theme(plot.title=element_text(hjust=0.5))
 
-# Scatterplot of Total SAT vs Total ACT with a regression line overlaid for data generated within the admissions_info function
+# Scatter plot of Total SAT vs Total ACT with a regression line overlaid for data generated within the admissions_info function
 act_vs_sat <- ggplot(admissions_data2, aes(x=Total_SAT, y=Total_ACT)) + 
   geom_point(aes(shape=Test_Requirements, color=Test_Requirements)) + 
   geom_smooth(method=lm) + 
   labs(x="Total SAT for Reading/Math", y="Total ACT for English/Math", title="Total ACT Score vs Total SAT Score for US Colleges") + 
-  theme_minimal()  
+  theme_minimal() +
+  theme(plot.title=element_text(hjust=0.5))
 
 # First 5 rows of data generated within the cost_info function
 cost_df <- head(cost_data, n=5)  
 
-# Boxplot of Ownership by In-State Tuition with points overlaid for data generated within the cost_info function
+# Box plot of Ownership by In-State Tuition with points overlaid for data generated within the cost_info function
 instate_by_ownership <- ggplot(cost_data, aes(x=Ownership, y=In_State_Tuition)) + 
   geom_boxplot(fill="#112446") + 
   scale_y_continuous(trans="log10") + 
   geom_jitter() +
   labs(y="In-State Tuition", title="In-State Tuition by Ownership Type for State Colleges") + 
-  theme_minimal()  
+  theme_minimal() +
+  theme(plot.title=element_text(hjust=0.5))
 
-# Boxplot of Ownership by Out-of-State Tuition with points overlaid for data generated within the cost_info function
+# Box plot of Ownership by Out-of-State Tuition with points overlaid for data generated within the cost_info function
 outstate_by_ownership <- ggplot(cost_data, aes(x=Ownership, y=Out_of_State_Tuition)) + 
   geom_boxplot(fill="#112446") + 
   scale_y_continuous(trans="log10") + 
   geom_jitter() +
   labs(y="Out-of-State Tuition", title="Out-of-State Tuition by Ownership Type for State Colleges") + 
-  theme_minimal()  
+  theme_minimal() +
+  theme(plot.title=element_text(hjust=0.5))
 
 # First 5 rows of data generated within the demographic_info function
 demographic_df <- head(demographic_data, n=5)  
@@ -558,7 +570,7 @@ demographic_data_race <- demographic_data %>%
   summarise(Total_Count=sum(Count)) %>% 
   arrange(Total_Count, .by_group=TRUE)  
 
-# Barchart of Total Student Count by Ownership broken down by demographic for data generated within the demographic_info function
+# Bar plot of Total Student Count by Ownership broken down by demographic for data generated within the demographic_info function
 demographic_ownership <- demographic_data_race %>% 
   filter(!(Ethnicity_Gender %in% "Total_Enrollment")) %>%
   arrange(Ethnicity_Gender) %>% 
@@ -570,7 +582,7 @@ demographic_ownership <- demographic_data_race %>%
   theme(plot.title=element_text(hjust=0.5),
         plot.subtitle=element_text(hjust=0.5))  
 
-# Boxplot of Count of Students for Each Ownership by Gender for data generated within the demographic_info function
+# Box plot of Count of Students for Each Ownership by Gender for data generated within the demographic_info function
 demographic_data_gender <- demographic_data %>% 
   filter(Ethnicity_Gender %in% c("Total_Men", "Total_Women")) %>% 
   ggplot(aes(x=Ownership, y=Count, fill=Ethnicity_Gender)) +
@@ -598,7 +610,7 @@ financial_poverty_rate <- financial_data %>%
   theme(plot.title=element_text(hjust=0.5),
         plot.subtitle=element_text(hjust=0.5))  
 
-# Barchart of Mean Poverty Rate for each state by Ownership for data generated within the financial_info function
+# Bar plot of Mean Poverty Rate for each state by Ownership for data generated within the financial_info function
 poverty_rate_by_ownership <- financial_data %>% 
   group_by(Ownership) %>% 
   summarise(Mean_PR = mean(Poverty_Rate, na.rm=TRUE)) %>% 
@@ -614,7 +626,7 @@ poverty_rate_by_ownership <- financial_data %>%
 # First 5 rows of data generated within the earnings_info function
 earnings_df <- head(earnings_data, n=5)  
 
-# Scatterplot of In-State Tuition vs Median Earnings with a regression curve overlaid for data generated within the earnings_info function
+# Scatter plot of In-State Tuition vs Median Earnings with a regression curve overlaid for data generated within the earnings_info function
 instate_earning <- ggplot(earnings_data) +
   aes(x=In_State_Tuition, y=Median_Earnings) +
   geom_point(shape="circle", size=2, colour="#112446") +
@@ -624,7 +636,7 @@ instate_earning <- ggplot(earnings_data) +
   theme(plot.title=element_text(hjust=0.5),
         plot.subtitle=element_text(hjust=0.5))  
 
-# Scatterplot of Out-of-State Tuition vs Median Earnings with a regression curve overlaid for data generated within the earnings_info function
+# Scatter plot of Out-of-State Tuition vs Median Earnings with a regression curve overlaid for data generated within the earnings_info function
 outstate_earning <-  ggplot(earnings_data) +
   aes(x=Out_of_State_Tuition, y=Median_Earnings) +
   geom_point(shape="circle", size=2, colour="#112446") +
@@ -634,44 +646,14 @@ outstate_earning <-  ggplot(earnings_data) +
   theme(plot.title=element_text(hjust=0.5),
         plot.subtitle=element_text(hjust=0.5))  
 
-return(list(general_df, general_summary, size_by_ownership, instate_vs_adm, outstate_vs_adm, admissions_df, sat_vs_adm, act_vs_adm, act_vs_sat, cost_df, instate_by_ownership, outstate_by_ownership, demographic_df, demographic_data_race, demographic_ownership, demographic_data_gender, financial_df, financial_poverty_rate, poverty_rate_by_ownership, earnings_df, instate_earning, outstate_earning))
+correlation_data <- earnings_data %>% 
+  mutate(Total_Tuition = In_State_Tuition + Out_of_State_Tuition)
+
+earning_tuition_corr <- cor(correlation_data$Total_Tuition, correlation_data$Median_Earnings, use = "complete.obs")
+
+return(list(general_df, general_summary, size_by_ownership, instate_vs_adm, outstate_vs_adm, admissions_df, ownership_test_requirement, sat_vs_adm, act_vs_adm, act_vs_sat, cost_df, instate_by_ownership, outstate_by_ownership, demographic_df, demographic_data_race, demographic_ownership, demographic_data_gender, financial_df, financial_poverty_rate, poverty_rate_by_ownership, earnings_df, earning_tuition_corr, instate_earning, outstate_earning))
 }
 ```
-
-*We start by exploring the general information data. This dataset is a
-compilation of the tuition and admission details for schools in a
-particular state. Since the general data table consists of a substantial
-number of numeric columns, we draw summary statistics for these
-numerical columns. We then have a boxplot to see the measure of spread
-of the number of students for the colleges in the state separated by
-ownership. To understand if there is a correlation between tuition and
-the admission rate, we have a scatter plot for both in-state and
-out-of-state tuition by admission rate coded by ownership. We then
-analyze the admissions data consisting of the admissions rate and test
-details for schools in a particular state. We visualize the total SAT
-and ACT scores vs Admission Rates coded by Test Requirements to see if
-the total scores have a positive correlation with admission rate for
-schools. We also check if a higher ACT score implies a higher SAT score.
-We then move on to understand the cost perspective of these schools and
-understand if the ownership of schools affects the different tuition
-costs. We also explore the variability of in-state and out-of-state
-tuition costs by ownership.*
-
-*Now that we have covered the different aspects of the schools, it would
-be pertinent to see the student information in these schools. We start
-by understanding the student diversity. We explore a school’s diversity
-by understanding the number of students within each level of ethnicity
-and gender. We group ethnicities by the school’s ownership and sum up
-the total count to see the dominant ethnicity of students within each
-ownership. We then see the total number of men and women in each
-ownership. Moving on to the financial backgrounds of students enrolled
-in these schools, we explore the financial data. We plot the
-distribution of poverty rates for the particular state and see the mean
-poverty rate of schools in each ownership. Finally, we were inquisitive
-to know the prospective outcome of the students graduating from these
-schools to see how much they spent vs how much they earned after
-graduating. For this, we have a scatter plot for the median earnings of
-students.*
 
 *For each of the graphics above, we begin with the `ggplot` function to
 create a coordinate system from which we can then build. We next add a
@@ -682,9 +664,73 @@ axis labels, and key titles. To maintain consistency we have used
 `theme_minimal()` across all plots. It is important to note that not
 every plot could have been created with the data generated by the API.
 We ran transformations, groupings, and added new variables from the
-existing variables to get the desired plots.*
+existing variables to get the desired plots. Finally, we utilized
+several functions and options to create nicer aesthetics for the graphs…
+For instance, `str_wrap` allowed us to wrap the title text so that it
+was not cutoff, `position_dodge2` allowed us to prevent overlapping
+bars, and `trans=log10` allowed us to take skewed data and make it
+appear more normal so that the plots were easier to see and interpret.
+Additionally, the `head` function was used in order to give the user a
+preview with five rows of the data frame for each of the six functions
+above.*
 
-# Main Function
+In the graphics created above, we start by exploring the general
+information data. This dataset is a compilation of the tuition and
+admission details for schools in a particular state. Since the general
+data table consists of a substantial number of numeric columns, we draw
+summary statistics for these numerical columns after first returning the
+first five rows in the data frame. We then have a boxplot to see the
+measure of spread of the number of students for the colleges in the
+state separated by ownership. To understand whether there is a
+correlation between tuition and the admission rate, we have a scatter
+plot for both in-state and out-of-state tuition by admission rate coded
+by ownership. It appears there is a weak negative correlation in both
+instances, with it being slightly stronger between admission rates and
+out-of-state tuition than between admission rates and in-state tuition.
+
+We then analyze the admissions data consisting of the admissions rate
+and test details for schools in a particular state. Again, we begin by
+returning the first five rows of the data frame. Next, we visualize the
+total SAT and total ACT scores vs admission rates coded by test
+requirements to see if the total scores have a positive correlation with
+admission rate for schools. This does not appear to be the case for
+schools with high admission rates, but it would be interesting to see if
+the same can be said for schools with low admission rates. We also
+checked whether a higher ACT score is correlated with a higher SAT
+score, which it clearly is.
+
+We next move on to understand the cost perspective of these schools and
+understand if the ownership of schools affects the different tuition
+costs. We again print the first five rows of the data frame (and will
+continue to do so for each of the six functions created) and also
+explore the variability of in-state and out-of-state tuition costs by
+ownership. It is clear from these box plots that both in-state and
+out-of-state tuition are substantially lower for public schools than for
+private schools. Although this is unsurprising for in-state tuition, the
+large discrepency between median tuition rates for out-of-state public
+schools and private schools was somewhat surprising to find.
+
+Now that we have covered the different aspects of the schools, it would
+be pertinent to see the student information in these schools. We start
+by understanding the student diversity. We explore a school’s diversity
+by understanding the number of students within each level of ethnicity
+and gender. We group ethnicities by the school’s ownership and sum up
+the total count to see the dominant ethnicity of students within each
+ownership. We then see the total number of men and women in each
+ownership.
+
+Moving next onto the financial backgrounds of students enrolled in these
+schools, we explore the financial data. We plotted the distribution of
+poverty rates for the particular state and investigate the mean poverty
+rate of schools in each ownership.
+
+Finally, we desired to know the prospective outcome of the students
+graduating from these schools to see how much they spent vs how much
+they earned after graduating. For this, we have a scatter plot for the
+median earnings of students plotted against tuition they would have paid
+for that school.
+
+# 4 Main Function
 
 In order for the user to pull all of the information at once with one
 set of inputs, use the “Main Function” created below.  
@@ -699,19 +745,18 @@ Take the user input of:
 
 ``` r
 main <- function() {
-  key = params$key
-  state = params$state
-  size = params$ordering
-  n = params$rows 
-  year = params$year
-  ownership = params$ownership
-  locale = params$locale
+  key=params$key
+  state=params$state
+  size=params$ordering
+  n=params$rows 
+  year=params$year
+  locale=params$locale
   general_data <- general_info(key, state, size, n, year)
-  cost_data <- cost_info(key, state, cost = size, n, year)
-  admissions_data <- admissions_info(key, ownership, rate=size, n, year)
+  cost_data <- cost_info(key, state, cost=size, n, year)
+  admissions_data <- admissions_info(key, rate=size, n, year)
   demographic_data <- demographic_info(key, state, size, locale, n, year)
   financial_data <- financial_info(key, state, size, year)
-  earnings_data <- earnings_info(key, earnings = size, n, year)
+  earnings_data <- earnings_info(key, earnings=size, n, year)
   exploration(general_data, cost_data, admissions_data, demographic_data, financial_data, earnings_data, state, locale)
 }
 ```
@@ -725,7 +770,7 @@ state of interest. It also makes it easy to pull data for a specific
 year without having to type it as an argument into each separate
 function.*
 
-# Putting it all together
+# 5 Putting It All Together
 
 Finally we call the main function and generate the report for the user
 inputs. The function stores the visualizations that are returned as a
@@ -766,14 +811,19 @@ for( i in 1:length(result_list)){
 
 ![](README_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-1-2.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-1-3.png)<!-- -->
 
-    ## # A tibble: 5 × 9
-    ##   Name                              Admissions_Rate Test_Requirements      SAT_Reading SAT_Writing SAT_Math ACT_English ACT_Writing ACT_Math
-    ##   <chr>                                       <dbl> <fct>                        <int>       <int>    <int>       <int>       <int>    <int>
-    ## 1 Bais HaMedrash and Mesivta of Ba…               1 Neither required nor …          NA          NA       NA          NA          NA       NA
-    ## 2 California Christian College                    1 Recommended                     NA          NA       NA          NA          NA       NA
-    ## 3 California Jazz Conservatory                    1 Neither required nor …          NA          NA       NA          NA          NA       NA
-    ## 4 Central Methodist University-Col…               1 Recommended                     NA          NA       NA          NA          NA       NA
-    ## 5 Conception Seminary College                     1 Required                        NA          NA       NA          25           7       26
+    ## # A tibble: 5 × 10
+    ##   Name                 Ownership    Admissions_Rate Test_Requirements      SAT_Reading SAT_Writing SAT_Math ACT_English ACT_Writing ACT_Math
+    ##   <chr>                <fct>                  <dbl> <fct>                        <int>       <int>    <int>       <int>       <int>    <int>
+    ## 1 Arizona College of … Proprietary                1 Neither required nor …          NA          NA       NA          NA          NA       NA
+    ## 2 Arizona College of … Proprietary                1 Neither required nor …          NA          NA       NA          NA          NA       NA
+    ## 3 Bais HaMedrash and … Private, No…               1 Neither required nor …          NA          NA       NA          NA          NA       NA
+    ## 4 California Christia… Private, No…               1 Recommended                     NA          NA       NA          NA          NA       NA
+    ## 5 California Jazz Con… Private, No…               1 Neither required nor …          NA          NA       NA          NA          NA       NA
+    ##                     
+    ##                      Required Recommended Neither required nor recommended Do not know Considered but not required
+    ##   Public                   13           6                                0           6                           0
+    ##   Private, Nonprofit       22          11                               26           9                           0
+    ##   Proprietary               0           4                                3           0                           0
 
 ![](README_files/figure-gfm/unnamed-chunk-1-4.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-1-5.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-1-6.png)<!-- -->
 
@@ -838,9 +888,80 @@ for( i in 1:length(result_list)){
     ## 3 University of Health Sciences and Pharmacy in St. Louis            30147             30147          121576           109300         112800
     ## 4 Albany College of Pharmacy and Health Sciences                     36745             36745          119112           110100         119100
     ## 5 MCPHS University                                                   34650             34650          118171           102600         115500
+    ## [1] 0.2187894
 
 ``` r
 grid.arrange(instate_earning, outstate_earning, ncol=2)
 ```
 
 ![](README_files/figure-gfm/unnamed-chunk-1-13.png)<!-- -->
+
+In the graphics created above, we start by exploring the general
+information data. This dataset is a compilation of the tuition and
+admission details for schools in a particular state. Since the general
+data table consists of a substantial number of numeric columns, we draw
+summary statistics for these numerical columns after first returning the
+first five rows in the data frame. We then have a boxplot to see the
+measure of spread of the number of students for the colleges in the
+state separated by ownership. To understand whether there is a
+correlation between tuition and the admission rate, we have a scatter
+plot for both in-state and out-of-state tuition by admission rate coded
+by ownership. It appears there is a weak negative correlation in both
+instances, with it being slightly stronger between admission rates and
+out-of-state tuition than between admission rates and in-state tuition.
+
+We then analyze the admissions data consisting of the admissions rate
+and test details for schools in a particular state. Again, we begin by
+returning the first five rows of the data frame. Next, we visualize the
+total SAT and total ACT scores vs admission rates coded by test
+requirements to see if the total scores have a positive correlation with
+admission rate for schools. This does not appear to be the case for
+schools with high admission rates, but it would be interesting to see if
+the same can be said for schools with low admission rates. We also
+checked whether a higher ACT score is correlated with a higher SAT
+score, which it clearly is.
+
+We next move on to understand the cost perspective of these schools and
+understand if the ownership of schools affects the different tuition
+costs. We again print the first five rows of the data frame (and will
+continue to do so for each of the six functions created) and also
+explore the variability of in-state and out-of-state tuition costs by
+ownership. It is clear from these box plots that both in-state and
+out-of-state tuition are substantially lower for public schools than for
+private schools. Although this is unsurprising for in-state tuition, the
+large discrepency between median tuition rates for out-of-state public
+schools and private schools was somewhat surprising to find.
+
+Now that we have covered the different aspects of the schools, it would
+be pertinent to see the student information in these schools. We start
+by understanding the student diversity. We explore a school’s diversity
+by understanding the number of students within each level of ethnicity
+and gender. We group ethnicities by the school’s ownership and sum up
+the total count to see the dominant ethnicity of students within each
+ownership. It is not surprising to see that the most dominant ethnicity
+is white across all ownerships. The next leading ethnicity is Hispanic.
+We then see the total number of men and women in each ownership.
+Private, Nonprofit schools have more variability and have more number of
+women than men in NC. Though,Public schools in NC do not show anything
+interesting in terms of gender, we see that a couple of schools have
+outliers which needs to be inspected.
+
+Moving next onto the financial backgrounds of students enrolled in these
+schools, we explore the financial data. We plotted the distribution of
+poverty rates for the particular state and investigate the mean poverty
+rate of schools in each ownership. The poverty rate distribution seems
+to show a bimodal distribution. We see that Public schools have higher
+Mean Poverty Rate in comparison to Private Schools. This is an expected
+observation since Private schools tend to have a higher tuition fees.
+
+Finally, we desired to know the prospective outcome of the students
+graduating from these schools to see how much they spent vs how much
+they earned after graduating. For this, we have a scatter plot for the
+median earnings of students plotted against tuition they would have paid
+for that school. We see that the trend is not linear and that studying
+from a school with higher tuition costs does not imply higher financial
+prospects for the student in the future. To corroborate this finding, we
+take the correlation of Tuition(In-state+Out-of-State) and Median
+Earning 10 years after entry and the correlation coefficient is an
+indication of little to almost no relationship between Tuition paid and
+Median Earnings.
